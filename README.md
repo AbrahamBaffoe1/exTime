@@ -13,6 +13,7 @@ A comprehensive time tracking application with user authentication, shift tracki
 ## Technology Stack
 ### Frontend
 - React
+- Pure CSS
 - React Router
 - Lucide React Icons
 - Date-fns

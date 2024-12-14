@@ -1,0 +1,329 @@
+frontend/src/components/History/History.css
+.history-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+}
+
+/* Enhanced Header Section */
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-title h1 {
+  font-size: 2rem;
+  background: linear-gradient(45deg, var(--primary-600), var(--primary-800));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Export Button */
+.export-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 1px solid var(--primary-200);
+  border-radius: 12px;
+  color: var(--primary-700);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.export-button:hover {
+  background: var(--primary-50);
+  border-color: var(--primary-300);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.export-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Enhanced Filter Controls */
+.filter-controls {
+  display: flex;
+  gap: 0.5rem;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+  padding: 0.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.filter-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  color: var(--gray-600);
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-500);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.filter-button:hover {
+  color: var(--primary-700);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.filter-button.active {
+  background: var(--primary-50);
+  color: var(--primary-700);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Enhanced Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, 
+    rgba(var(--primary-rgb), 0.1),
+    rgba(var(--primary-rgb), 0)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.summary-card:hover::before {
+  opacity: 1;
+}
+
+.summary-card h3 {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.summary-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.summary-value .trend {
+  font-size: 0.875rem;
+  color: var(--success-600);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.trend.up { color: var(--success-600); }
+.trend.down { color: var(--error-600); }
+
+/* Enhanced Day Entries */
+.day-entry {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.day-entry:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(
+    to right,
+    rgba(var(--primary-rgb), 0.05),
+    rgba(var(--primary-rgb), 0.02)
+  );
+  border-bottom: 1px solid rgba(var(--primary-rgb), 0.08);
+}
+
+/* Table Row Enhancement */
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 1rem;
+  align-items: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background: rgba(var(--primary-rgb), 0.03);
+  transform: scale(1.01);
+}
+
+/* Enhanced Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-badge.in {
+  background: linear-gradient(45deg, var(--success-50), var(--success-100));
+  color: var(--success-700);
+}
+
+.status-badge.out {
+  background: linear-gradient(45deg, var(--error-50), var(--error-100));
+  color: var(--error-700);
+}
+
+/* Download Menu */
+.download-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  min-width: 180px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.download-menu.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.download-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.download-option:hover {
+  background: var(--gray-50);
+  color: var(--primary-600);
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .history-container {
+    padding: 1rem;
+  }
+
+  .header-title h1 {
+    font-size: 1.5rem;
+  }
+
+  .summary-cards {
+    gap: 1rem;
+  }
+
+  .summary-card {
+    padding: 1.25rem;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+  }
+
+  .day-header {
+    padding: 1rem;
+  }
+
+  .table-row {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+}

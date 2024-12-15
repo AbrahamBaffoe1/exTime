@@ -2,12 +2,28 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Define default settings
 const DEFAULT_SETTINGS = {
-  theme: 'light', // Add theme to default settings
-  timeFormat: '24', // 24-hour format by default
+  theme: 'light',
+  timeFormat: '24',
   breakReminders: true,
   overtimeAlerts: true,
   breakReminderInterval: 60, // minutes
   overtimeThreshold: 8, // hours
+  isPremium: false,
+  autoClockSettings: {
+    enabled: false,
+    workdays: {
+      monday: true,
+      tuesday: true,
+      wednesday: true,
+      thursday: true,
+      friday: true,
+      saturday: false,
+      sunday: false
+    },
+    clockInTime: '09:00',
+    clockOutTime: '17:00'
+  },
+  stripeCustomerId: null
 };
 
 // Create context

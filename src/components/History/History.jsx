@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format, parseISO, differenceInSeconds } from 'date-fns';
+import { format, parseISO, differenceInSeconds, startOfWeek, startOfMonth } from 'date-fns';
 import { 
   Clock, 
   Download, 
@@ -20,6 +20,11 @@ import './History.css';
 const History = () => {
   const { token } = useAuth();
   const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('week');
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [editingNote, setEditingNote] = useState(null);
+  const [noteText, setNoteText] = useState('');
   const [summary, setSummary] = useState({
     totalHours: 0,
     averageHoursPerDay: 0,
@@ -27,79 +32,88 @@ const History = () => {
     mostFrequentClockIn: '',
     mostFrequentClockOut: ''
   });
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('week');
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [editingNote, setEditingNote] = useState(null);
-  const [noteText, setNoteText] = useState('');
 
-  const fetchEntries = async () => {
+  useEffect(() => {
     if (!token) {
       setLoading(false);
       return;
     }
 
-    try {
-      const response = await fetch(`http://localhost:3000/api/time-entries?filter=${filter}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+    const fetchTimeEntries = async () => {
+      try {
+        let url = 'http://localhost:3000/api/time-entries';
+        const now = new Date();
+
+        // Add date filtering based on selected filter
+        if (filter === 'week') {
+          const weekStart = startOfWeek(now);
+          url += `?after=${weekStart.toISOString()}`;
+        } else if (filter === 'month') {
+          const monthStart = startOfMonth(now);
+          url += `?after=${monthStart.toISOString()}`;
         }
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch entries');
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch time entries');
+        }
+
+        const data = await response.json();
+
+        // Group entries by date
+        const groupedEntries = data.reduce((acc, entry) => {
+          const date = format(parseISO(entry.timestamp), 'yyyy-MM-dd');
+          
+          if (!acc[date]) {
+            acc[date] = {
+              date,
+              entries: [],
+              totalHours: 0
+            };
+          }
+          
+          acc[date].entries.push(entry);
+          
+          // Calculate total hours for the day
+          if (entry.action === 'OUT') {
+            const clockIn = acc[date].entries.find(e => 
+              e.action === 'IN' && 
+              parseISO(e.timestamp) < parseISO(entry.timestamp)
+            );
+            
+            if (clockIn) {
+              const duration = differenceInSeconds(
+                parseISO(entry.timestamp),
+                parseISO(clockIn.timestamp)
+              ) / 3600;
+              acc[date].totalHours += duration;
+            }
+          }
+          
+          return acc;
+        }, {});
+
+        // Convert to array and sort by date
+        const sortedEntries = Object.values(groupedEntries).sort(
+          (a, b) => parseISO(b.date) - parseISO(a.date)
+        );
+
+        setEntries(sortedEntries);
+        calculateSummary(sortedEntries);
+      } catch (error) {
+        console.error('Error fetching time entries:', error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = await response.json();
-      const groupedEntries = groupEntriesByDate(data);
-      setEntries(groupedEntries);
-      calculateSummary(groupedEntries);
-    } catch (error) {
-      console.error('Error fetching entries:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEntries();
-  }, [filter, token]);
-
-  const groupEntriesByDate = (data) => {
-    const grouped = {};
-    let currentDay = null;
-    let clockIn = null;
-
-    data.forEach(entry => {
-      const date = format(parseISO(entry.timestamp), 'yyyy-MM-dd');
-      
-      if (!grouped[date]) {
-        grouped[date] = {
-          date: date,
-          entries: [],
-          totalHours: 0,
-          breaks: []
-        };
-      }
-
-      grouped[date].entries.push({
-        ...entry,
-        note: entry.note || ''
-      });
-
-      if (entry.action === 'IN') {
-        clockIn = entry.timestamp;
-      } else if (entry.action === 'OUT' && clockIn) {
-        const duration = differenceInSeconds(parseISO(entry.timestamp), parseISO(clockIn));
-        grouped[date].totalHours += duration / 3600;
-        clockIn = null;
-      }
-    });
-
-    return Object.values(grouped);
-  };
+    fetchTimeEntries();
+  }, [token, filter]);
 
   const handleEditNote = (entryId, currentNote) => {
     setEditingNote(entryId);
@@ -108,13 +122,13 @@ const History = () => {
 
   const handleSaveNote = async (entryId) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/time-entries/${entryId}/note`, {
+      const response = await fetch(`http://localhost:3000/api/time-entries/${entryId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ note: noteText })
+        body: JSON.stringify({ notes: noteText })
       });
 
       if (!response.ok) {
@@ -180,42 +194,88 @@ const History = () => {
     return `${h}h ${m}m`;
   };
 
-  const exportData = (format) => {
-    const formattedData = entries.map(day => ({
-      date: day.date,
-      totalHours: day.totalHours,
-      entries: day.entries.map(entry => ({
-        time: format(parseISO(entry.timestamp), 'HH:mm'),
-        action: entry.action,
-        duration: entry.duration || '',
-        note: entry.note || ''
-      }))
-    }));
+  const exportData = (exportFormat) => {
+    // Create a more detailed export format
+    const formattedData = entries.map(day => {
+      const dailyData = {
+        date: format(parseISO(day.date), 'MMMM d, yyyy'),
+        totalHours: formatDuration(day.totalHours),
+        entries: day.entries.map(entry => ({
+          time: format(parseISO(entry.timestamp), 'HH:mm'),
+          action: entry.action,
+          category: entry.category || 'regular',
+          note: entry.note || ''
+        }))
+      };
 
-    let content = format === 'csv' 
-      ? 'Date,Time,Action,Duration,Note\n' 
-      : '';
+      // Calculate durations for each clock-in/out pair
+      let lastClockIn = null;
+      dailyData.entries.forEach((entry, index) => {
+        if (entry.action === 'IN') {
+          lastClockIn = entry;
+        } else if (entry.action === 'OUT' && lastClockIn) {
+          const duration = differenceInSeconds(
+            parseISO(entry.timestamp),
+            parseISO(lastClockIn.timestamp)
+          ) / 3600;
+          entry.duration = formatDuration(duration);
+          lastClockIn = null;
+        }
+      });
 
-    formattedData.forEach(day => {
-      if (format === 'csv') {
+      return dailyData;
+    });
+
+    let content = '';
+
+    if (exportFormat === 'csv') {
+      // CSV Header
+      content = 'Date,Time,Action,Category,Duration,Notes\n';
+      
+      // CSV Data
+      formattedData.forEach(day => {
         day.entries.forEach(entry => {
-          content += `${day.date},${entry.time},${entry.action},${entry.duration},"${entry.note}"\n`;
+          content += `${day.date},${entry.time},${entry.action},${entry.category},${entry.duration || ''},${entry.note.replace(/"/g, '""')}\n`;
         });
-      } else {
+        // Add a blank line between days for readability
+        content += '\n';
+      });
+    } else {
+      // Text Format
+      formattedData.forEach(day => {
         content += `\n=== ${day.date} ===\n`;
         content += `Total Hours: ${day.totalHours}\n\n`;
+        
         day.entries.forEach(entry => {
-          content += `${entry.time} - ${entry.action} ${entry.duration ? `(${entry.duration})` : ''}\n`;
-          if (entry.note) content += `Note: ${entry.note}\n`;
+          content += `${entry.time} - ${entry.action}`;
+          if (entry.category !== 'regular') {
+            content += ` (${entry.category})`;
+          }
+          if (entry.duration) {
+            content += ` - Duration: ${entry.duration}`;
+          }
+          content += '\n';
+          if (entry.note) {
+            content += `Note: ${entry.note}\n`;
+          }
+          content += '\n';
         });
-      }
-    });
+        content += '----------------------------------------\n';
+      });
+
+      // Add summary at the end
+      content += '\nSUMMARY\n';
+      content += `Total Days Worked: ${summary.daysWorked}\n`;
+      content += `Total Hours: ${formatDuration(parseFloat(summary.totalHours))}\n`;
+      content += `Average Hours per Day: ${formatDuration(parseFloat(summary.averageHoursPerDay))}\n`;
+      content += `Typical Schedule: ${summary.mostFrequentClockIn} - ${summary.mostFrequentClockOut}\n`;
+    }
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `time-history.${format}`;
+    a.download = `timesheet-${format(new Date(), 'yyyy-MM-dd')}.${exportFormat}`;
     a.click();
     URL.revokeObjectURL(url);
     setShowExportMenu(false);

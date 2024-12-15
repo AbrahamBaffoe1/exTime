@@ -71,6 +71,129 @@
   color: var(--brand-primary);
 }
 
+/* Premium Features */
+.lock-icon {
+  margin-left: auto;
+  color: var(--gray-400);
+}
+
+.premium-upgrade {
+  background: linear-gradient(135deg, var(--brand-primary-light), var(--brand-secondary-light));
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.premium-info h3 {
+  color: var(--brand-primary);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.premium-info p {
+  color: var(--gray-600);
+  margin-bottom: 1.5rem;
+}
+
+.premium-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  text-align: left;
+  max-width: 300px;
+  margin: 0 auto 2rem;
+}
+
+.premium-features-list li {
+  color: var(--gray-700);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.upgrade-button {
+  background: var(--brand-primary);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upgrade-button:hover {
+  background: var(--brand-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Work Days Grid */
+.workdays-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.workday-button {
+  background: var(--gray-100);
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.workday-button.active {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: white;
+}
+
+.workday-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Work Hours */
+.work-hours {
+  display: flex;
+  gap: 1rem;
+}
+
+.time-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.time-input label {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+}
+
+.time-input input[type="time"] {
+  padding: 0.5rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.time-input input[type="time"]:hover {
+  border-color: var(--brand-primary);
+}
+
+.time-input input[type="time"]:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
 /* Setting Items */
 .setting-item {
   display: flex;
@@ -248,6 +371,15 @@ input:checked + .slider:before {
   .subsetting {
     margin-left: 1rem;
   }
+
+  .workdays-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .work-hours {
+    flex-direction: column;
+  }
 }
 
 /* Theme Support */
@@ -274,7 +406,8 @@ input:checked + .slider:before {
 }
 
 [data-theme="dark"] select,
-[data-theme="dark"] .number-input {
+[data-theme="dark"] .number-input,
+[data-theme="dark"] .time-input input[type="time"] {
   background: var(--gray-700);
   border-color: var(--gray-600);
   color: var(--gray-200);
@@ -287,4 +420,23 @@ input:checked + .slider:before {
 [data-theme="dark"] .reset-button {
   background: var(--error-dark);
   color: var(--error-light);
+}
+
+[data-theme="dark"] .premium-upgrade {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+}
+
+[data-theme="dark"] .premium-info h3 {
+  color: var(--brand-primary-light);
+}
+
+[data-theme="dark"] .premium-info p,
+[data-theme="dark"] .premium-features-list li {
+  color: var(--gray-300);
+}
+
+[data-theme="dark"] .workday-button {
+  background: var(--gray-700);
+  border-color: var(--gray-600);
+  color: var(--gray-300);
 }

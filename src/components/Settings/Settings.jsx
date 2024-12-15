@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSettings } from '../SettingsContext/SettingsContext';
-import { Settings as SettingsIcon, Clock, Bell, Sun, Moon, RotateCcw } from 'lucide-react';
+import { Settings as SettingsIcon, Clock, Bell, Sun, Moon, RotateCcw, Crown, Lock } from 'lucide-react';
 import './Settings.css';
 
 const Settings = () => {
@@ -24,6 +24,29 @@ const Settings = () => {
     }
   };
 
+  const handleWorkdayChange = (day) => {
+    const newWorkdays = {
+      ...settings.autoClockSettings.workdays,
+      [day]: !settings.autoClockSettings.workdays[day]
+    };
+    handleSettingChange('autoClockSettings', {
+      ...settings.autoClockSettings,
+      workdays: newWorkdays
+    });
+  };
+
+  const handleTimeChange = (type, value) => {
+    handleSettingChange('autoClockSettings', {
+      ...settings.autoClockSettings,
+      [type]: value
+    });
+  };
+
+  const handleUpgradeClick = () => {
+    // TODO: Implement Stripe checkout
+    console.log('Upgrade to premium clicked');
+  };
+
   return (
     <div className="settings-container">
       <div className="settings-card">
@@ -33,6 +56,97 @@ const Settings = () => {
         </div>
 
         <div className="settings-content">
+          <div className="settings-section">
+            <h2>
+              <Crown className="section-icon" />
+              Premium Features
+              {!settings.isPremium && <Lock className="lock-icon" size={16} />}
+            </h2>
+            {!settings.isPremium ? (
+              <div className="premium-upgrade">
+                <div className="premium-info">
+                  <h3>Upgrade to Premium</h3>
+                  <p>Get access to advanced features like automatic clock in/out and more!</p>
+                  <ul className="premium-features-list">
+                    <li>✓ Automatic clock in/out</li>
+                    <li>✓ Custom work schedules</li>
+                    <li>✓ Advanced reporting</li>
+                  </ul>
+                </div>
+                <button className="upgrade-button" onClick={handleUpgradeClick}>
+                  Upgrade Now
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <label>Auto Clock In/Out</label>
+                    <span className="setting-description">Automatically track your work hours</span>
+                  </div>
+                  <label className="switch">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.autoClockSettings.enabled} 
+                      onChange={(e) => handleSettingChange('autoClockSettings', {
+                        ...settings.autoClockSettings,
+                        enabled: e.target.checked
+                      })} 
+                    />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+
+                {settings.autoClockSettings.enabled && (
+                  <>
+                    <div className="setting-item subsetting">
+                      <div className="setting-info">
+                        <label>Work Days</label>
+                        <span className="setting-description">Select your working days</span>
+                      </div>
+                      <div className="workdays-grid">
+                        {Object.entries(settings.autoClockSettings.workdays).map(([day, isEnabled]) => (
+                          <button
+                            key={day}
+                            className={`workday-button ${isEnabled ? 'active' : ''}`}
+                            onClick={() => handleWorkdayChange(day)}
+                          >
+                            {day.charAt(0).toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="setting-item subsetting">
+                      <div className="setting-info">
+                        <label>Work Hours</label>
+                        <span className="setting-description">Set your daily work schedule</span>
+                      </div>
+                      <div className="work-hours">
+                        <div className="time-input">
+                          <label>Clock In</label>
+                          <input
+                            type="time"
+                            value={settings.autoClockSettings.clockInTime}
+                            onChange={(e) => handleTimeChange('clockInTime', e.target.value)}
+                          />
+                        </div>
+                        <div className="time-input">
+                          <label>Clock Out</label>
+                          <input
+                            type="time"
+                            value={settings.autoClockSettings.clockOutTime}
+                            onChange={(e) => handleTimeChange('clockOutTime', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
           <div className="settings-section">
             <h2>
               <Sun className="section-icon" />

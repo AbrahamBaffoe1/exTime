@@ -2,9 +2,12 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Define default settings
 const DEFAULT_SETTINGS = {
+  theme: 'light', // Add theme to default settings
   timeFormat: '24', // 24-hour format by default
   breakReminders: true,
   overtimeAlerts: true,
+  breakReminderInterval: 60, // minutes
+  overtimeThreshold: 8, // hours
 };
 
 // Create context
@@ -20,13 +23,16 @@ export const SettingsProvider = ({ children }) => {
     // Try to load settings from localStorage
     const savedSettings = localStorage.getItem('app-settings');
     return savedSettings 
-      ? JSON.parse(savedSettings) 
+      ? { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) }  // Merge with defaults
       : { ...DEFAULT_SETTINGS };
   });
 
   // Effect to save settings to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('app-settings', JSON.stringify(settings));
+    
+    // Apply theme to body
+    document.body.setAttribute('data-theme', settings.theme);
   }, [settings]);
 
   // Function to update specific settings

@@ -41,7 +41,7 @@ const TimeClock = () => {
   const [showNotes, setShowNotes] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch last entry on component mount
+  // Fetch last entry and break state on component mount
   useEffect(() => {
     const fetchLastEntry = async () => {
       try {
@@ -53,14 +53,21 @@ const TimeClock = () => {
         });
 
         if (response.ok) {
-          const lastEntry = await response.json();
-          if (lastEntry) {
-            // Restore clock state based on last entry
+          const data = await response.json();
+          if (data.lastEntry) {
+            // Restore clock state based on last entry and break state
             setClockState(prev => ({
               ...prev,
-              status: lastEntry.action === 'IN' ? 'IN' : 'OUT',
-              lastClockIn: lastEntry.action === 'IN' ? lastEntry.timestamp : prev.lastClockIn,
-              category: lastEntry.category || 'regular'
+              status: data.lastEntry.action === 'IN' ? 'IN' : 'OUT',
+              lastClockIn: data.lastEntry.action === 'IN' ? data.lastEntry.timestamp : prev.lastClockIn,
+              category: data.lastEntry.category || 'regular',
+              // Restore break state if available
+              ...(data.breakState && {
+                isOnBreak: data.breakState.isOnBreak,
+                breakStartTime: data.breakState.breakStartTime,
+                totalBreakTime: data.breakState.totalBreakTime,
+                breaks: data.breakState.breaks || []
+              })
             }));
           }
         }

@@ -83,11 +83,17 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Get the last time entry for a user
+// Get the last time entry and break state for a user
 router.get('/last', authenticateToken, async (req, res) => {
   try {
+    // Get the last clock in/out entry
     const lastEntry = await TimeEntry.findOne({
-      where: { userId: req.user.id },
+      where: { 
+        userId: req.user.id,
+        action: {
+          [Op.in]: ['IN', 'OUT']
+        }
+      },
       order: [['timestamp', 'DESC']],
       include: [
         {
@@ -98,8 +104,71 @@ router.get('/last', authenticateToken, async (req, res) => {
       ]
     });
 
+    // If user is clocked in, check for any active break
+    let breakState = null;
+    if (lastEntry && lastEntry.action === 'IN') {
+      const lastBreakEntry = await TimeEntry.findOne({
+        where: {
+          userId: req.user.id,
+          action: {
+            [Op.in]: ['BREAK_START', 'BREAK_END']
+          },
+          timestamp: {
+            [Op.gt]: lastEntry.timestamp
+          }
+        },
+        order: [['timestamp', 'DESC']]
+      });
+
+      // Calculate total break time
+      const breakEntries = await TimeEntry.findAll({
+        where: {
+          userId: req.user.id,
+          action: {
+            [Op.in]: ['BREAK_START', 'BREAK_END']
+          },
+          timestamp: {
+            [Op.gt]: lastEntry.timestamp
+          }
+        },
+        order: [['timestamp', 'ASC']]
+      });
+
+      let totalBreakTime = 0;
+      let breaks = [];
+      for (let i = 0; i < breakEntries.length; i += 2) {
+        if (breakEntries[i].action === 'BREAK_START') {
+          const startTime = new Date(breakEntries[i].timestamp);
+          const endTime = breakEntries[i + 1] 
+            ? new Date(breakEntries[i + 1].timestamp)
+            : new Date();
+          
+          const duration = Math.floor((endTime - startTime) / 1000);
+          totalBreakTime += duration;
+
+          if (breakEntries[i + 1]) {
+            breaks.push({
+              start: startTime,
+              end: endTime,
+              duration: duration
+            });
+          }
+        }
+      }
+
+      breakState = {
+        isOnBreak: lastBreakEntry && lastBreakEntry.action === 'BREAK_START',
+        breakStartTime: lastBreakEntry && lastBreakEntry.action === 'BREAK_START' ? lastBreakEntry.timestamp : null,
+        totalBreakTime,
+        breaks
+      };
+    }
+
     if (lastEntry) {
-      res.json(lastEntry);
+      res.json({
+        lastEntry,
+        breakState
+      });
     } else {
       res.status(404).json({ message: 'No entries found' });
     }

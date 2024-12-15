@@ -1,272 +1,448 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettings } from '../SettingsContext/SettingsContext';
-import { Settings as SettingsIcon, Clock, Bell, Sun, Moon, RotateCcw, Crown, Lock } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { 
+  Settings as SettingsIcon, Clock, Bell, Sun, 
+  RotateCcw, Crown, Lock, ChevronRight, Shield, 
+  Zap, Activity, PlayCircle
+} from 'lucide-react';
 import './Settings.css';
 
 const Settings = () => {
-  const { settings, updateSettings, resetSettings } = useSettings();
+  const location = useLocation();
+  const { settings, updateSettings, resetSettings, errors } = useSettings();
+  const [activeSection, setActiveSection] = useState('premium');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
 
-  const handleSettingChange = (key, value) => {
-    updateSettings({ [key]: value });
-  };
+  // Handle scroll effects
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const handleBreakReminderIntervalChange = (e) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value > 0) {
-      handleSettingChange('breakReminderInterval', value);
+  // Handle payment status
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const paymentStatus = params.get('payment');
+    const sessionId = params.get('session_id');
+
+    if (paymentStatus === 'success' && sessionId) {
+      updateSettings({ isPremium: true });
+      setNotification({
+        type: 'success',
+        message: 'Successfully upgraded to Premium!'
+      });
+      window.history.replaceState({}, document.title, '/settings');
+    } else if (paymentStatus === 'cancelled') {
+      setNotification({
+        type: 'info',
+        message: 'Payment cancelled. You can try again when ready.'
+      });
+      window.history.replaceState({}, document.title, '/settings');
+    }
+  }, [location, updateSettings]);
+
+  const sections = [
+    {
+      id: 'premium',
+      icon: Crown,
+      title: 'Premium Features',
+      description: 'Upgrade your experience'
+    },
+    {
+      id: 'appearance',
+      icon: Sun,
+      title: 'Appearance',
+      description: 'Customize your interface'
+    },
+    {
+      id: 'time',
+      icon: Clock,
+      title: 'Time Settings',
+      description: 'Manage your schedule'
+    },
+    {
+      id: 'notifications',
+      icon: Bell,
+      title: 'Notifications',
+      description: 'Control your alerts'
+    }
+  ];
+
+  const premiumFeatures = [
+    {
+      icon: Shield,
+      title: 'Advanced Security',
+      description: 'Enterprise-grade data protection'
+    },
+    {
+      icon: Zap,
+      title: 'Smart Automation',
+      description: 'AI-powered workflow optimization'
+    },
+    {
+      icon: Activity,
+      title: 'Advanced Analytics',
+      description: 'Deep productivity insights'
+    },
+    {
+      icon: PlayCircle,
+      title: 'Priority Support',
+      description: '24/7 dedicated assistance'
+    }
+  ];
+
+  const handleSettingChange = async (key, value) => {
+    setLoading(true);
+    try {
+      const success = await updateSettings({ [key]: value });
+      if (!success && errors[key]) {
+        setNotification({
+          type: 'error',
+          message: errors[key]
+        });
+      }
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        message: 'Failed to update setting'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleOvertimeThresholdChange = (e) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value > 0) {
-      handleSettingChange('overtimeThreshold', value);
+  const handleUpgradeClick = async () => {
+    setLoading(true);
+    try {
+      await initiateCheckout();
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        message: 'Failed to initiate checkout. Please try again.'
+      });
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleWorkdayChange = (day) => {
-    const newWorkdays = {
-      ...settings.autoClockSettings.workdays,
-      [day]: !settings.autoClockSettings.workdays[day]
-    };
-    handleSettingChange('autoClockSettings', {
-      ...settings.autoClockSettings,
-      workdays: newWorkdays
-    });
-  };
-
-  const handleTimeChange = (type, value) => {
-    handleSettingChange('autoClockSettings', {
-      ...settings.autoClockSettings,
-      [type]: value
-    });
-  };
-
-  const handleUpgradeClick = () => {
-    // TODO: Implement Stripe checkout
-    console.log('Upgrade to premium clicked');
   };
 
   return (
     <div className="settings-container">
-      <div className="settings-card">
-        <div className="settings-header">
-          <SettingsIcon className="settings-icon" />
-          <h1>Settings</h1>
+      {/* Header */}
+      <header className={`settings-header ${isScrolled ? 'scrolled' : ''}`}>
+        <h1>Settings</h1>
+      </header>
+
+      <main className="settings-main">
+        {/* Notification */}
+        {notification && (
+          <div className={`notification-toast ${notification.type}`}>
+            {notification.message}
+          </div>
+        )}
+
+        {/* Navigation Cards */}
+        <div className="settings-nav">
+          {sections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <div
+                key={section.id}
+                className={`nav-card ${activeSection === section.id ? 'active' : ''}`}
+                onClick={() => setActiveSection(section.id)}
+              >
+                <div className="nav-card-content">
+                  <Icon className="nav-card-icon" />
+                  <div className="nav-card-text">
+                    <h3>{section.title}</h3>
+                    <p>{section.description}</p>
+                  </div>
+                  <ChevronRight className="nav-card-arrow" />
+                </div>
+                <div className="nav-card-backdrop"></div>
+              </div>
+            );
+          })}
         </div>
 
+        {/* Main Content */}
         <div className="settings-content">
-          <div className="settings-section">
-            <h2>
-              <Crown className="section-icon" />
-              Premium Features
-              {!settings.isPremium && <Lock className="lock-icon" size={16} />}
-            </h2>
-            {!settings.isPremium ? (
-              <div className="premium-upgrade">
-                <div className="premium-info">
-                  <h3>Upgrade to Premium</h3>
-                  <p>Get access to advanced features like automatic clock in/out and more!</p>
-                  <ul className="premium-features-list">
-                    <li>✓ Automatic clock in/out</li>
-                    <li>✓ Custom work schedules</li>
-                    <li>✓ Advanced reporting</li>
-                  </ul>
+          {activeSection === 'premium' && (
+            <div className="premium-section">
+              {!settings.isPremium ? (
+                <div className="premium-upgrade">
+                  <div className="premium-header">
+                    <Crown className="premium-icon" />
+                    <h2>Unlock Premium Features</h2>
+                    <p>Take your experience to the next level</p>
+                  </div>
+
+                  <div className="premium-features">
+                    {premiumFeatures.map((feature, index) => {
+                      const FeatureIcon = feature.icon;
+                      return (
+                        <div key={index} className="premium-feature-card">
+                          <FeatureIcon className="feature-icon" />
+                          <h3>{feature.title}</h3>
+                          <p>{feature.description}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="premium-pricing">
+                    <div className="price-tag">
+                      <span className="price">$9.99</span>
+                      <span className="period">/month</span>
+                    </div>
+                    <button 
+                      className="upgrade-button"
+                      onClick={handleUpgradeClick}
+                      disabled={loading}
+                    >
+                      <span>Upgrade Now</span>
+                      <div className="button-glow"></div>
+                    </button>
+                  </div>
                 </div>
-                <button className="upgrade-button" onClick={handleUpgradeClick}>
-                  Upgrade Now
+              ) : (
+                <div className="premium-features-enabled">
+                  <div className="premium-header">
+                    <Crown className="premium-icon" />
+                    <h2>Premium Features</h2>
+                  </div>
+
+                  <div className="settings-group">
+                    <div className="notification-option">
+                      <div className="notification-info">
+                        <h3>Auto Clock In/Out</h3>
+                        <p>Automatically track your work hours</p>
+                      </div>
+                      <div 
+                        className={`toggle-switch ${settings.autoClockSettings?.enabled ? 'active' : ''}`}
+                        onClick={() => handleSettingChange('autoClockSettings', {
+                          ...settings.autoClockSettings,
+                          enabled: !settings.autoClockSettings?.enabled
+                        })}
+                      />
+                    </div>
+
+                    {settings.autoClockSettings?.enabled && (
+                      <div className="subsettings">
+                        <div className="workdays-grid">
+                          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                            <button
+                              key={day}
+                              className={`workday-button ${
+                                settings.autoClockSettings.workdays?.[day] ? 'active' : ''
+                              }`}
+                              onClick={() => {
+                                const newWorkdays = {
+                                  ...settings.autoClockSettings.workdays,
+                                  [day]: !settings.autoClockSettings.workdays?.[day]
+                                };
+                                handleSettingChange('autoClockSettings', {
+                                  ...settings.autoClockSettings,
+                                  workdays: newWorkdays
+                                });
+                              }}
+                            >
+                              {day}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="time-inputs">
+                          <div className="time-input">
+                            <label>Clock In Time</label>
+                            <input
+                              type="time"
+                              className="settings-input"
+                              value={settings.autoClockSettings.clockInTime}
+                              onChange={(e) => 
+                                handleSettingChange('autoClockSettings', {
+                                  ...settings.autoClockSettings,
+                                  clockInTime: e.target.value
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="time-input">
+                            <label>Clock Out Time</label>
+                            <input
+                              type="time"
+                              className="settings-input"
+                              value={settings.autoClockSettings.clockOutTime}
+                              onChange={(e) => 
+                                handleSettingChange('autoClockSettings', {
+                                  ...settings.autoClockSettings,
+                                  clockOutTime: e.target.value
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeSection === 'appearance' && (
+            <div className="appearance-section">
+              <h2>Theme Selection</h2>
+              <div className="theme-options">
+                {['light', 'dark', 'system'].map((theme) => (
+                  <button
+                    key={theme}
+                    className={`theme-button ${settings.theme === theme ? 'active' : ''}`}
+                    onClick={() => handleSettingChange('theme', theme)}
+                  >
+                    {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'time' && (
+            <div className="time-settings">
+              <div className="setting-group">
+                <div className="time-format-toggle">
+                  <span>24-Hour Format</span>
+                  <div 
+                    className={`toggle-switch ${settings.timeFormat === '24' ? 'active' : ''}`}
+                    onClick={() => 
+                      handleSettingChange('timeFormat', 
+                        settings.timeFormat === '24' ? '12' : '24'
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'notifications' && (
+            <div className="notification-settings">
+              <div className="notification-option">
+                <div className="notification-info">
+                  <h3>Break Reminders</h3>
+                  <p>Get reminded to take breaks</p>
+                </div>
+                <div 
+                  className={`toggle-switch ${settings.breakReminders ? 'active' : ''}`}
+                  onClick={() => handleSettingChange('breakReminders', !settings.breakReminders)}
+                />
+              </div>
+
+              {settings.breakReminders && (
+                <div className="notification-option subsetting">
+                  <div className="notification-info">
+                    <h3>Reminder Interval</h3>
+                    <p>Minutes between reminders</p>
+                  </div>
+                  <input
+                    type="number"
+                    className="settings-input"
+                    value={settings.breakReminderInterval}
+                    onChange={(e) => 
+                      handleSettingChange('breakReminderInterval', 
+                        parseInt(e.target.value)
+                      )
+                    }
+                    min="15"
+                    max="120"
+                  />
+                </div>
+              )}
+
+              <div className="notification-option">
+                <div className="notification-info">
+                  <h3>Overtime Alerts</h3>
+                  <p>Get notified about overtime</p>
+                </div>
+                <div 
+                  className={`toggle-switch ${settings.overtimeAlerts ? 'active' : ''}`}
+                  onClick={() => handleSettingChange('overtimeAlerts', !settings.overtimeAlerts)}
+                />
+              </div>
+
+              {settings.overtimeAlerts && (
+                <div className="notification-option subsetting">
+                  <div className="notification-info">
+                    <h3>Daily Limit</h3>
+                    <p>Hours before overtime</p>
+                  </div>
+                  <input
+                    type="number"
+                    className="settings-input"
+                    value={settings.overtimeThreshold}
+                    onChange={(e) => 
+                      handleSettingChange('overtimeThreshold', 
+                        parseInt(e.target.value)
+                      )
+                    }
+                    min="4"
+                    max="12"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="settings-footer">
+          <button 
+            className="reset-button"
+            onClick={() => setShowResetConfirm(true)}
+            disabled={loading}
+          >
+            <RotateCcw className="reset-icon" />
+            Reset to Defaults
+          </button>
+        </div>
+
+        {/* Reset Confirmation Dialog */}
+        {showResetConfirm && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>Reset Settings</h2>
+              <p>This will reset all settings to their default values. This action cannot be undone.</p>
+              <div className="modal-actions">
+                <button 
+                  className="modal-button cancel"
+                  onClick={() => setShowResetConfirm(false)}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="modal-button confirm"
+                  onClick={handleResetSettings}
+                  disabled={loading}
+                >
+                  Reset Settings
                 </button>
               </div>
-            ) : (
-              <>
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <label>Auto Clock In/Out</label>
-                    <span className="setting-description">Automatically track your work hours</span>
-                  </div>
-                  <label className="switch">
-                    <input 
-                      type="checkbox" 
-                      checked={settings.autoClockSettings.enabled} 
-                      onChange={(e) => handleSettingChange('autoClockSettings', {
-                        ...settings.autoClockSettings,
-                        enabled: e.target.checked
-                      })} 
-                    />
-                    <span className="slider"></span>
-                  </label>
-                </div>
-
-                {settings.autoClockSettings.enabled && (
-                  <>
-                    <div className="setting-item subsetting">
-                      <div className="setting-info">
-                        <label>Work Days</label>
-                        <span className="setting-description">Select your working days</span>
-                      </div>
-                      <div className="workdays-grid">
-                        {Object.entries(settings.autoClockSettings.workdays).map(([day, isEnabled]) => (
-                          <button
-                            key={day}
-                            className={`workday-button ${isEnabled ? 'active' : ''}`}
-                            onClick={() => handleWorkdayChange(day)}
-                          >
-                            {day.charAt(0).toUpperCase()}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="setting-item subsetting">
-                      <div className="setting-info">
-                        <label>Work Hours</label>
-                        <span className="setting-description">Set your daily work schedule</span>
-                      </div>
-                      <div className="work-hours">
-                        <div className="time-input">
-                          <label>Clock In</label>
-                          <input
-                            type="time"
-                            value={settings.autoClockSettings.clockInTime}
-                            onChange={(e) => handleTimeChange('clockInTime', e.target.value)}
-                          />
-                        </div>
-                        <div className="time-input">
-                          <label>Clock Out</label>
-                          <input
-                            type="time"
-                            value={settings.autoClockSettings.clockOutTime}
-                            onChange={(e) => handleTimeChange('clockOutTime', e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="settings-section">
-            <h2>
-              <Sun className="section-icon" />
-              Appearance
-            </h2>
-            <div className="setting-item">
-              <div className="setting-info">
-                <label>Theme</label>
-                <span className="setting-description">Choose your preferred color theme</span>
-              </div>
-              <select 
-                value={settings.theme} 
-                onChange={(e) => handleSettingChange('theme', e.target.value)}
-                className="theme-select"
-              >
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="system">System</option>
-              </select>
             </div>
           </div>
+        )}
 
-          <div className="settings-section">
-            <h2>
-              <Clock className="section-icon" />
-              Time Settings
-            </h2>
-            <div className="setting-item">
-              <div className="setting-info">
-                <label>Time Format</label>
-                <span className="setting-description">Display time in 12 or 24-hour format</span>
-              </div>
-              <select 
-                value={settings.timeFormat} 
-                onChange={(e) => handleSettingChange('timeFormat', e.target.value)}
-              >
-                <option value="12">12-hour</option>
-                <option value="24">24-hour</option>
-              </select>
-            </div>
+        {/* Loading Overlay */}
+        {loading && (
+          <div className="loading-overlay">
+            <div className="loading-spinner" />
           </div>
-
-          <div className="settings-section">
-            <h2>
-              <Bell className="section-icon" />
-              Notifications
-            </h2>
-            <div className="setting-item">
-              <div className="setting-info">
-                <label>Break Reminders</label>
-                <span className="setting-description">Get reminded to take breaks during work</span>
-              </div>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={settings.breakReminders} 
-                  onChange={(e) => handleSettingChange('breakReminders', e.target.checked)} 
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            {settings.breakReminders && (
-              <div className="setting-item subsetting">
-                <div className="setting-info">
-                  <label>Reminder Interval</label>
-                  <span className="setting-description">Minutes between break reminders</span>
-                </div>
-                <input
-                  type="number"
-                  min="15"
-                  max="120"
-                  value={settings.breakReminderInterval}
-                  onChange={handleBreakReminderIntervalChange}
-                  className="number-input"
-                />
-              </div>
-            )}
-
-            <div className="setting-item">
-              <div className="setting-info">
-                <label>Overtime Alerts</label>
-                <span className="setting-description">Get notified when exceeding regular hours</span>
-              </div>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={settings.overtimeAlerts} 
-                  onChange={(e) => handleSettingChange('overtimeAlerts', e.target.checked)} 
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            {settings.overtimeAlerts && (
-              <div className="setting-item subsetting">
-                <div className="setting-info">
-                  <label>Overtime Threshold</label>
-                  <span className="setting-description">Hours before overtime alert</span>
-                </div>
-                <input
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={settings.overtimeThreshold}
-                  onChange={handleOvertimeThresholdChange}
-                  className="number-input"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="settings-footer">
-            <button className="reset-button" onClick={resetSettings}>
-              <RotateCcw size={16} />
-              Reset to Defaults
-            </button>
-          </div>
-        </div>
-      </div>
+        )}
+      </main>
     </div>
   );
 };

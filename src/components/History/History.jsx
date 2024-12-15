@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { format, parseISO, differenceInSeconds } from 'date-fns';
-import { Clock, Download, FileText, FileSpreadsheet, TrendingUp, TrendingDown } from 'lucide-react';
+import { 
+  Clock, 
+  Download, 
+  FileText, 
+  FileSpreadsheet, 
+  TrendingUp, 
+  TrendingDown,
+  Calendar,
+  Clock3,
+  Edit3,
+  Save,
+  X,
+  MessageSquare
+} from 'lucide-react';
 import { useAuth } from '../AuthContext/AuthContext';
 import './History.css';
 
@@ -17,6 +30,8 @@ const History = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('week');
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [editingNote, setEditingNote] = useState(null);
+  const [noteText, setNoteText] = useState('');
 
   const fetchEntries = async () => {
     if (!token) {
@@ -43,7 +58,6 @@ const History = () => {
       calculateSummary(groupedEntries);
     } catch (error) {
       console.error('Error fetching entries:', error);
-      // Handle error (e.g., show error message to user)
     } finally {
       setLoading(false);
     }
@@ -70,7 +84,10 @@ const History = () => {
         };
       }
 
-      grouped[date].entries.push(entry);
+      grouped[date].entries.push({
+        ...entry,
+        note: entry.note || ''
+      });
 
       if (entry.action === 'IN') {
         clockIn = entry.timestamp;
@@ -82,6 +99,43 @@ const History = () => {
     });
 
     return Object.values(grouped);
+  };
+
+  const handleEditNote = (entryId, currentNote) => {
+    setEditingNote(entryId);
+    setNoteText(currentNote || '');
+  };
+
+  const handleSaveNote = async (entryId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/time-entries/${entryId}/note`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ note: noteText })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save note');
+      }
+
+      // Update local state
+      setEntries(entries.map(day => ({
+        ...day,
+        entries: day.entries.map(entry => 
+          entry.id === entryId 
+            ? { ...entry, note: noteText }
+            : entry
+        )
+      })));
+
+      setEditingNote(null);
+      setNoteText('');
+    } catch (error) {
+      console.error('Error saving note:', error);
+    }
   };
 
   const calculateSummary = (groupedEntries) => {
@@ -133,24 +187,26 @@ const History = () => {
       entries: day.entries.map(entry => ({
         time: format(parseISO(entry.timestamp), 'HH:mm'),
         action: entry.action,
-        duration: entry.duration || ''
+        duration: entry.duration || '',
+        note: entry.note || ''
       }))
     }));
 
     let content = format === 'csv' 
-      ? 'Date,Time,Action,Duration\n' 
+      ? 'Date,Time,Action,Duration,Note\n' 
       : '';
 
     formattedData.forEach(day => {
       if (format === 'csv') {
         day.entries.forEach(entry => {
-          content += `${day.date},${entry.time},${entry.action},${entry.duration}\n`;
+          content += `${day.date},${entry.time},${entry.action},${entry.duration},"${entry.note}"\n`;
         });
       } else {
         content += `\n=== ${day.date} ===\n`;
         content += `Total Hours: ${day.totalHours}\n\n`;
         day.entries.forEach(entry => {
           content += `${entry.time} - ${entry.action} ${entry.duration ? `(${entry.duration})` : ''}\n`;
+          if (entry.note) content += `Note: ${entry.note}\n`;
         });
       }
     });
@@ -165,29 +221,34 @@ const History = () => {
     setShowExportMenu(false);
   };
 
-  // If no token, show login prompt
   if (!token) {
     return (
       <div className="history-container">
         <div className="login-prompt">
-          <Clock size={48} className="text-primary-600" />
+          <Clock size={64} className="text-primary-600" />
           <h2>Please log in to view your time history</h2>
+          <p>Track your time and view detailed reports</p>
         </div>
       </div>
     );
   }
 
-  // Loading state
   if (loading) {
-    return <div className="loading">Loading your time entries...</div>;
+    return (
+      <div className="history-container">
+        <div className="loading">
+          <Clock size={48} className="text-primary-600 animate-spin" />
+          <p>Loading your time entries...</p>
+        </div>
+      </div>
+    );
   }
 
-  // No entries state
   if (entries.length === 0) {
     return (
       <div className="history-container">
         <div className="no-entries-prompt">
-          <Clock size={48} className="text-primary-600" />
+          <Clock size={64} className="text-primary-600" />
           <h2>No time entries found</h2>
           <p>Start tracking your time to see your history</p>
         </div>
@@ -199,7 +260,7 @@ const History = () => {
     <div className="history-container">
       <div className="history-header">
         <div className="header-title">
-          <Clock size={32} className="text-primary-600" />
+          <Clock size={36} className="text-primary-600" />
           <h1>Time History</h1>
         </div>
         
@@ -229,6 +290,7 @@ const History = () => {
             <button
               className="export-button"
               onClick={() => setShowExportMenu(!showExportMenu)}
+              onBlur={() => setTimeout(() => setShowExportMenu(false), 200)}
             >
               <Download size={20} />
               Export
@@ -284,6 +346,7 @@ const History = () => {
         <div className="summary-card">
           <h3>Typical Schedule</h3>
           <div className="summary-value schedule">
+            <Clock3 size={24} className="text-primary-500" />
             {summary.mostFrequentClockIn} - {summary.mostFrequentClockOut}
           </div>
         </div>
@@ -293,8 +356,12 @@ const History = () => {
         {entries.map((day) => (
           <div key={day.date} className="day-entry">
             <div className="day-header">
-              <h2>{format(parseISO(day.date), 'EEEE, MMMM d')}</h2>
+              <h2>
+                <Calendar size={20} className="inline-block mr-2 text-primary-500" />
+                {format(parseISO(day.date), 'EEEE, MMMM d')}
+              </h2>
               <span className="total-hours">
+                <Clock3 size={16} className="inline-block mr-1" />
                 Total: {formatDuration(day.totalHours)}
               </span>
             </div>
@@ -303,6 +370,7 @@ const History = () => {
                 <div>Time</div>
                 <div>Action</div>
                 <div>Duration</div>
+                <div>Notes</div>
               </div>
               {day.entries.map((entry, index) => {
                 const nextEntry = day.entries[index + 1];
@@ -324,6 +392,47 @@ const History = () => {
                       {entry.action}
                     </div>
                     <div className="duration-cell">{duration}</div>
+                    <div className="note-cell">
+                      {editingNote === entry.id ? (
+                        <div className="note-edit">
+                          <textarea
+                            value={noteText}
+                            onChange={(e) => setNoteText(e.target.value)}
+                            placeholder="Add a note..."
+                            className="note-textarea"
+                          />
+                          <div className="note-actions">
+                            <button
+                              className="note-button save"
+                              onClick={() => handleSaveNote(entry.id)}
+                            >
+                              <Save size={16} />
+                            </button>
+                            <button
+                              className="note-button cancel"
+                              onClick={() => setEditingNote(null)}
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="note-display">
+                          {entry.note ? (
+                            <>
+                              <MessageSquare size={16} className="note-icon" />
+                              <span className="note-text">{entry.note}</span>
+                            </>
+                          ) : null}
+                          <button
+                            className="edit-note-button"
+                            onClick={() => handleEditNote(entry.id, entry.note)}
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}

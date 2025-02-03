@@ -19,7 +19,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/time-entries', require('./routes/timeEntries'));
 
 // Database connection and sync
-sequelize.sync({ force: true }) // Use alter to modify existing tables
+sequelize.sync() // Sync without dropping tables
   .then(() => {
     console.log('Database connected and synchronized');
     app.listen(PORT, () => {

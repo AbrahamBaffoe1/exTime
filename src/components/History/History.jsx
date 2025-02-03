@@ -92,7 +92,7 @@ const History = () => {
       dailyData.entries.forEach((entry, index) => {
         if (entry.action === 'IN') {
           lastClockIn = entry;
-        } else if (entry.action === 'OUT' && lastClockIn && lastClockIn.time) {
+        } else if (entry.action === 'OUT' && lastClockIn) {
           try {
             const duration = differenceInSeconds(
               parseISO(entry.timestamp),

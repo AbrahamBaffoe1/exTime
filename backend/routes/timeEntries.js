@@ -49,6 +49,10 @@ router.get('/', authenticateToken, async (req, res) => {
         [Op.gte]: startOfMonth
       };
     }
+    // For 'all' filter, we don't add any timestamp condition
+
+    console.log('Fetching time entries with filter:', filter);
+    console.log('Where condition:', whereCondition);
 
     const entries = await TimeEntry.findAll({
       where: whereCondition,
@@ -62,6 +66,7 @@ router.get('/', authenticateToken, async (req, res) => {
       ]
     });
 
+    console.log('Found entries:', entries.length);
     res.json(entries);
   } catch (error) {
     console.error('Error fetching time entries:', error);

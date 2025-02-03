@@ -30,14 +30,11 @@ const useTimeStore = create((set, get) => ({
     }
   },
 
-  calculateSummary: (entries) => {
-    let totalHours = 0;
+  calculateFrequentTimes: (entries) => {
     const clockInTimes = [];
     const clockOutTimes = [];
 
     entries.forEach(day => {
-      totalHours += day.totalHours;
-      
       day.entries.forEach(entry => {
         const time = format(parseISO(entry.timestamp), 'HH:mm');
         if (entry.action === 'IN') clockInTimes.push(time);
@@ -55,17 +52,10 @@ const useTimeStore = create((set, get) => ({
         .sort((a, b) => b[1] - a[1])[0][0];
     };
 
-    set({
-      summary: {
-        totalHours: totalHours.toFixed(2),
-        averageHoursPerDay: entries.length > 0 
-          ? (totalHours / entries.length).toFixed(2) 
-          : '0.00',
-        daysWorked: entries.length,
-        mostFrequentClockIn: getMostFrequent(clockInTimes),
-        mostFrequentClockOut: getMostFrequent(clockOutTimes)
-      }
-    });
+    return {
+      mostFrequentClockIn: getMostFrequent(clockInTimes),
+      mostFrequentClockOut: getMostFrequent(clockOutTimes)
+    };
   },
 
   fetchData: async (token) => {
@@ -75,13 +65,11 @@ const useTimeStore = create((set, get) => ({
     }
 
     try {
-      set({ loading: true, token });
+      set({ loading: true });
       const filter = get().filter;
-      const now = new Date();
 
       // Fetch time entries
-      let url = `http://localhost:3000/api/time-entries?filter=${filter}`;
-
+      const url = `http://localhost:3000/api/time-entries?filter=${filter}`;
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -92,7 +80,15 @@ const useTimeStore = create((set, get) => ({
         throw new Error('Failed to fetch time entries');
       }
 
-      const { entries: data, stats } = await response.json();
+      const responseData = await response.json();
+      
+      // Validate response format
+      if (!responseData || !responseData.entries || !responseData.stats) {
+        console.error('Invalid response format:', responseData);
+        throw new Error('Invalid response format from server');
+      }
+
+      const { entries: data, stats } = responseData;
 
       // Group entries by date
       const groupedEntries = data.reduce((acc, entry) => {
@@ -107,23 +103,6 @@ const useTimeStore = create((set, get) => ({
         }
         
         acc[date].entries.push(entry);
-        
-        // Calculate total hours for the day
-        if (entry.action === 'OUT') {
-          const clockIn = acc[date].entries.find(e => 
-            e.action === 'IN' && 
-            parseISO(e.timestamp) < parseISO(entry.timestamp)
-          );
-          
-          if (clockIn) {
-            const duration = differenceInSeconds(
-              parseISO(entry.timestamp),
-              parseISO(clockIn.timestamp)
-            ) / 3600;
-            acc[date].totalHours += duration;
-          }
-        }
-        
         return acc;
       }, {});
 
@@ -146,6 +125,9 @@ const useTimeStore = create((set, get) => ({
 
       const authData = await authResponse.json();
 
+      // Calculate frequent times
+      const { mostFrequentClockIn, mostFrequentClockOut } = get().calculateFrequentTimes(sortedEntries);
+
       set({ 
         entries: sortedEntries, 
         authHistory: authData,
@@ -153,12 +135,24 @@ const useTimeStore = create((set, get) => ({
           totalHours: stats.totalHours.toFixed(2),
           averageHoursPerDay: stats.averageHoursPerDay.toFixed(2),
           daysWorked: stats.daysWorked,
-          mostFrequentClockIn: get().summary.mostFrequentClockIn,
-          mostFrequentClockOut: get().summary.mostFrequentClockOut
+          mostFrequentClockIn,
+          mostFrequentClockOut
         }
       });
     } catch (error) {
       console.error('Error fetching data:', error);
+      // Set default values on error
+      set({ 
+        entries: [], 
+        authHistory: [],
+        summary: {
+          totalHours: '0.00',
+          averageHoursPerDay: '0.00',
+          daysWorked: 0,
+          mostFrequentClockIn: 'N/A',
+          mostFrequentClockOut: 'N/A'
+        }
+      });
     } finally {
       set({ loading: false });
     }

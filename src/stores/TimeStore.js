@@ -80,12 +80,7 @@ const useTimeStore = create((set, get) => ({
       const now = new Date();
 
       // Fetch time entries
-      let url = 'http://localhost:3000/api/time-entries';
-      if (filter === 'week') {
-        url += `?after=${startOfWeek(now).toISOString()}`;
-      } else if (filter === 'month') {
-        url += `?after=${startOfMonth(now).toISOString()}`;
-      }
+      let url = `http://localhost:3000/api/time-entries?filter=${filter}`;
 
       const response = await fetch(url, {
         headers: {
@@ -138,9 +133,8 @@ const useTimeStore = create((set, get) => ({
       );
 
       // Fetch auth history
-      const authUrl = 'http://localhost:3000/api/auth-history';
-      const authResponse = await fetch(authUrl + (filter === 'week' ? `?after=${startOfWeek(now).toISOString()}` : 
-                                               filter === 'month' ? `?after=${startOfMonth(now).toISOString()}` : ''), {
+      const authUrl = `http://localhost:3000/api/auth-history?filter=${filter}`;
+      const authResponse = await fetch(authUrl, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

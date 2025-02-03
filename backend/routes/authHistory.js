@@ -7,30 +7,29 @@ const sequelize = require('../config/database');
 
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const { after } = req.query;
-        const whereClause = {
-            userId: req.user.id,
-            type: {
-                [Op.in]: ['LOGIN', 'LOGOUT']
-            }
-        };
-
-        if (after) {
-            whereClause.timestamp = {
-                [Op.gte]: new Date(after)
-            };
+        const { filter } = req.query;
+        let afterDate = null;
+        
+        const now = new Date();
+        if (filter === 'week') {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+            afterDate = startOfWeek;
+        } else if (filter === 'month') {
+            afterDate = new Date(now.getFullYear(), now.getMonth(), 1);
         }
 
         const authHistory = await sequelize.query(
             `SELECT type, timestamp 
              FROM auth_logs 
              WHERE user_id = :userId 
-             ${after ? 'AND timestamp >= :after' : ''}
+             ${afterDate ? 'AND timestamp >= :after' : ''}
              ORDER BY timestamp DESC`,
             {
                 replacements: { 
                     userId: req.user.id,
-                    after: after || null
+                    after: afterDate
                 },
                 type: sequelize.QueryTypes.SELECT
             }

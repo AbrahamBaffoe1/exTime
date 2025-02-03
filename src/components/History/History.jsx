@@ -12,8 +12,11 @@ import {
   Edit3,
   Save,
   X,
-  MessageSquare
+  MessageSquare,
+  FileType
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { useAuth } from '../AuthContext/AuthContext';
 import useTimeStore from '../../stores/timeStore';
 import './History.css';
@@ -66,18 +69,22 @@ const History = () => {
     return `${h}h ${m}m`;
   };
 
-  const exportData = (exportFormat) => {
+  const exportData = async (exportFormat) => {
     // Create a more detailed export format
     const formattedData = entries.map(day => {
+      if (!day || !day.date) return null;
+      
       const dailyData = {
         date: format(parseISO(day.date), 'MMMM d, yyyy'),
-        totalHours: formatDuration(day.totalHours),
-        entries: day.entries.map(entry => ({
-          time: format(parseISO(entry.timestamp), 'HH:mm'),
-          action: entry.action,
-          category: entry.category || 'regular',
-          note: entry.note || ''
-        }))
+        totalHours: formatDuration(day.totalHours || 0),
+        entries: day.entries
+          .filter(entry => entry && entry.timestamp)
+          .map(entry => ({
+            time: format(parseISO(entry.timestamp), 'HH:mm'),
+            action: entry.action,
+            category: entry.category || 'regular',
+            note: entry.note || ''
+          }))
       };
 
       // Calculate durations for each clock-in/out pair
@@ -85,18 +92,23 @@ const History = () => {
       dailyData.entries.forEach((entry, index) => {
         if (entry.action === 'IN') {
           lastClockIn = entry;
-        } else if (entry.action === 'OUT' && lastClockIn) {
-          const duration = differenceInSeconds(
-            parseISO(entry.timestamp),
-            parseISO(lastClockIn.timestamp)
-          ) / 3600;
-          entry.duration = formatDuration(duration);
+        } else if (entry.action === 'OUT' && lastClockIn && lastClockIn.time) {
+          try {
+            const duration = differenceInSeconds(
+              parseISO(entry.timestamp),
+              parseISO(lastClockIn.timestamp)
+            ) / 3600;
+            entry.duration = formatDuration(duration);
+          } catch (error) {
+            console.error('Error calculating duration:', error);
+            entry.duration = '0h 0m';
+          }
           lastClockIn = null;
         }
       });
 
       return dailyData;
-    });
+    }).filter(Boolean);
 
     let content = '';
 
@@ -143,13 +155,67 @@ const History = () => {
       content += `Typical Schedule: ${summary.mostFrequentClockIn} - ${summary.mostFrequentClockOut}\n`;
     }
 
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `timesheet-${format(new Date(), 'yyyy-MM-dd')}.${exportFormat}`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (exportFormat === 'pdf') {
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.text('Time History Report', 15, 15);
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${format(new Date(), 'MMMM d, yyyy')}`, 15, 25);
+
+      // Add summary section
+      doc.setFontSize(16);
+      doc.text('Summary', 15, 40);
+      doc.setFontSize(12);
+      doc.text(`Total Hours: ${formatDuration(summary.totalHours)}`, 20, 50);
+      doc.text(`Average Daily Hours: ${formatDuration(summary.averageHoursPerDay)}`, 20, 57);
+      doc.text(`Days Worked: ${summary.daysWorked}`, 20, 64);
+      doc.text(`Typical Schedule: ${summary.mostFrequentClockIn} - ${summary.mostFrequentClockOut}`, 20, 71);
+
+      // Prepare data for table
+      const tableData = [];
+      entries.forEach(day => {
+        if (day && day.date && day.entries) {
+          day.entries.forEach(entry => {
+            if (entry && entry.timestamp) {
+              try {
+                tableData.push([
+                  format(parseISO(day.date), 'MMM d, yyyy'),
+                  format(parseISO(entry.timestamp), 'HH:mm'),
+                  entry.action,
+                  entry.category || 'regular',
+                  entry.note || ''
+                ]);
+              } catch (error) {
+                console.error('Error formatting table data:', error);
+              }
+            }
+          });
+        }
+      });
+
+      // Add table
+      doc.autoTable({
+        startY: 80,
+        head: [['Date', 'Time', 'Action', 'Category', 'Notes']],
+        body: tableData,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [41, 128, 185] },
+        alternateRowStyles: { fillColor: [245, 245, 245] }
+      });
+
+      doc.save(`timesheet-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    } else {
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `timesheet-${format(new Date(), 'yyyy-MM-dd')}.${exportFormat}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
     setShowExportMenu(false);
   };
 
@@ -237,6 +303,10 @@ const History = () => {
                 <div className="download-option" onClick={() => exportData('txt')}>
                   <FileText size={18} />
                   Export as Text
+                </div>
+                <div className="download-option" onClick={() => exportData('pdf')}>
+                  <FileType size={18} />
+                  Export as PDF
                 </div>
               </div>
             )}

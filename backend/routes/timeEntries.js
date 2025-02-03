@@ -34,38 +34,24 @@ router.get('/', authenticateToken, async (req, res) => {
     let whereCondition = {
       userId: req.user.id // Ensure user only sees their own entries
     };
-    let dateCondition = {};
 
     const now = new Date();
-    switch (filter) {
-      case 'week':
-        dateCondition = {
-          timestamp: {
-            [Op.gte]: new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
-          }
-        };
-        break;
-      case 'month':
-        dateCondition = {
-          timestamp: {
-            [Op.gte]: new Date(now.getFullYear(), now.getMonth(), 1)
-          }
-        };
-        break;
-      case 'all':
-      default:
-        // No additional filter
-        break;
+    if (filter === 'week') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      whereCondition.timestamp = {
+        [Op.gte]: startOfWeek
+      };
+    } else if (filter === 'month') {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      whereCondition.timestamp = {
+        [Op.gte]: startOfMonth
+      };
     }
 
-    // Merge conditions
-    const finalCondition = {
-      ...whereCondition,
-      ...dateCondition
-    };
-
     const entries = await TimeEntry.findAll({
-      where: finalCondition,
+      where: whereCondition,
       order: [['timestamp', 'DESC']],
       include: [
         {

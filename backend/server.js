@@ -17,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/time-entries', require('./routes/timeEntries'));
+app.use('/api/auth-history', require('./routes/authHistory.js'));
 
 // Database connection and sync
 sequelize.sync() // Sync without dropping tables

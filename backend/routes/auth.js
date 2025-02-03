@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const User = require('../models/user');
 const TimeEntry = require('../models/timeEntry');
+const sequelize = require('../config/database');
 
 // User Registration
 router.post('/register', async (req, res) => {
@@ -97,6 +98,19 @@ router.post('/login', async (req, res) => {
       order: [['timestamp', 'DESC']]
     });
 
+    // Log login event
+    await sequelize.query(
+      `INSERT INTO auth_logs (user_id, type, ip_address, user_agent) VALUES (:userId, 'LOGIN', :ip, :userAgent)`,
+      {
+        replacements: {
+          userId: user.id,
+          ip: req.ip,
+          userAgent: req.get('user-agent') || null
+        },
+        type: sequelize.QueryTypes.INSERT
+      }
+    );
+
     res.json({ 
       message: 'Login successful',
       token,
@@ -151,5 +165,28 @@ function authenticateToken(req, res, next) {
     next();
   });
 }
+
+// Logout
+router.post('/logout', authenticateToken, async (req, res) => {
+  try {
+    // Log logout event
+    await sequelize.query(
+      `INSERT INTO auth_logs (user_id, type, ip_address, user_agent) VALUES (:userId, 'LOGOUT', :ip, :userAgent)`,
+      {
+        replacements: {
+          userId: req.user.id,
+          ip: req.ip,
+          userAgent: req.get('user-agent') || null
+        },
+        type: sequelize.QueryTypes.INSERT
+      }
+    );
+
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Logout failed' });
+  }
+});
 
 module.exports = router;

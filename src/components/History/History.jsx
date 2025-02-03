@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format, parseISO, differenceInSeconds, startOfWeek, startOfMonth } from 'date-fns';
+import { format, parseISO, differenceInSeconds } from 'date-fns';
 import { 
   Clock, 
   Download, 
@@ -15,105 +15,21 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../AuthContext/AuthContext';
+import useTimeStore from '../../stores/timeStore';
 import './History.css';
 
 const History = () => {
   const { token } = useAuth();
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('week');
+  const { entries, authHistory, loading, filter, summary, setFilter, setToken } = useTimeStore();
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [noteText, setNoteText] = useState('');
-  const [summary, setSummary] = useState({
-    totalHours: 0,
-    averageHoursPerDay: 0,
-    daysWorked: 0,
-    mostFrequentClockIn: '',
-    mostFrequentClockOut: ''
-  });
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
+    if (token) {
+      setToken(token);
     }
-
-    const fetchTimeEntries = async () => {
-      try {
-        let url = 'http://localhost:3000/api/time-entries';
-        const now = new Date();
-
-        // Add date filtering based on selected filter
-        if (filter === 'week') {
-          const weekStart = startOfWeek(now);
-          url += `?after=${weekStart.toISOString()}`;
-        } else if (filter === 'month') {
-          const monthStart = startOfMonth(now);
-          url += `?after=${monthStart.toISOString()}`;
-        }
-
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch time entries');
-        }
-
-        const data = await response.json();
-
-        // Group entries by date
-        const groupedEntries = data.reduce((acc, entry) => {
-          const date = format(parseISO(entry.timestamp), 'yyyy-MM-dd');
-          
-          if (!acc[date]) {
-            acc[date] = {
-              date,
-              entries: [],
-              totalHours: 0
-            };
-          }
-          
-          acc[date].entries.push(entry);
-          
-          // Calculate total hours for the day
-          if (entry.action === 'OUT') {
-            const clockIn = acc[date].entries.find(e => 
-              e.action === 'IN' && 
-              parseISO(e.timestamp) < parseISO(entry.timestamp)
-            );
-            
-            if (clockIn) {
-              const duration = differenceInSeconds(
-                parseISO(entry.timestamp),
-                parseISO(clockIn.timestamp)
-              ) / 3600;
-              acc[date].totalHours += duration;
-            }
-          }
-          
-          return acc;
-        }, {});
-
-        // Convert to array and sort by date
-        const sortedEntries = Object.values(groupedEntries).sort(
-          (a, b) => parseISO(b.date) - parseISO(a.date)
-        );
-
-        setEntries(sortedEntries);
-        calculateSummary(sortedEntries);
-      } catch (error) {
-        console.error('Error fetching time entries:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTimeEntries();
-  }, [token, filter]);
+  }, [token, setToken]);
 
   const handleEditNote = (entryId, currentNote) => {
     setEditingNote(entryId);
@@ -135,57 +51,13 @@ const History = () => {
         throw new Error('Failed to save note');
       }
 
-      // Update local state
-      setEntries(entries.map(day => ({
-        ...day,
-        entries: day.entries.map(entry => 
-          entry.id === entryId 
-            ? { ...entry, note: noteText }
-            : entry
-        )
-      })));
-
+      // Refresh data after saving note
+      setToken(token);
       setEditingNote(null);
       setNoteText('');
     } catch (error) {
       console.error('Error saving note:', error);
     }
-  };
-
-  const calculateSummary = (groupedEntries) => {
-    let totalHours = 0;
-    const clockInTimes = [];
-    const clockOutTimes = [];
-
-    groupedEntries.forEach(day => {
-      totalHours += day.totalHours;
-      
-      day.entries.forEach(entry => {
-        const time = format(parseISO(entry.timestamp), 'HH:mm');
-        if (entry.action === 'IN') clockInTimes.push(time);
-        if (entry.action === 'OUT') clockOutTimes.push(time);
-      });
-    });
-
-    setSummary({
-      totalHours: totalHours.toFixed(2),
-      averageHoursPerDay: groupedEntries.length > 0 
-        ? (totalHours / groupedEntries.length).toFixed(2) 
-        : '0.00',
-      daysWorked: groupedEntries.length,
-      mostFrequentClockIn: getMostFrequent(clockInTimes),
-      mostFrequentClockOut: getMostFrequent(clockOutTimes)
-    });
-  };
-
-  const getMostFrequent = (arr) => {
-    if (!arr.length) return 'N/A';
-    const frequency = arr.reduce((acc, val) => {
-      acc[val] = (acc[val] || 0) + 1;
-      return acc;
-    }, {});
-    return Object.entries(frequency)
-      .sort((a, b) => b[1] - a[1])[0][0];
   };
 
   const formatDuration = (hours) => {
@@ -409,6 +281,26 @@ const History = () => {
             <Clock3 size={24} className="text-primary-500" />
             {summary.mostFrequentClockIn} - {summary.mostFrequentClockOut}
           </div>
+        </div>
+      </div>
+
+      <div className="auth-history">
+        <h2 className="section-title">
+          <Clock size={24} className="text-primary-600" />
+          Login/Logout History
+        </h2>
+        <div className="auth-entries">
+          {authHistory.map((entry, index) => (
+            <div key={index} className="auth-entry">
+              <div className={`status-badge ${entry.type.toLowerCase()}`}>
+                <span className="status-dot"></span>
+                {entry.type}
+              </div>
+              <div className="timestamp">
+                {format(parseISO(entry.timestamp), 'MMM d, yyyy HH:mm')}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

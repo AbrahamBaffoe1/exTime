@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useSettings } from '../SettingsContext/SettingsContext';
 import { useAuth } from '../AuthContext/AuthContext';
+import useTimeStore from '../../stores/timeStore';
 import './TimeClock.css';
 
 const SHIFT_CATEGORIES = [
@@ -23,6 +24,7 @@ const SHIFT_CATEGORIES = [
 const TimeClock = () => {
   const { user, token } = useAuth();
   const { settings } = useSettings();
+  const { fetchData } = useTimeStore();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [clockState, setClockState] = useState({
     status: 'OUT',
@@ -149,6 +151,9 @@ const TimeClock = () => {
           alerts: action === 'IN' ? [] : prev.alerts,
           shiftNotes: action === 'IN' ? '' : prev.shiftNotes
         }));
+        
+        // Refresh time store data to update statistics
+        fetchData(token);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -201,6 +206,9 @@ const TimeClock = () => {
             breakStartTime: timestamp
           }));
         }
+        
+        // Refresh time store data to update statistics
+        fetchData(token);
       }
     } catch (error) {
       console.error('Error:', error);

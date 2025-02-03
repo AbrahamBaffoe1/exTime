@@ -54,6 +54,7 @@ router.get('/', authenticateToken, async (req, res) => {
     console.log('Fetching time entries with filter:', filter);
     console.log('Where condition:', whereCondition);
 
+    // Get all entries for calculating statistics
     const entries = await TimeEntry.findAll({
       where: whereCondition,
       order: [['timestamp', 'DESC']],
@@ -66,8 +67,79 @@ router.get('/', authenticateToken, async (req, res) => {
       ]
     });
 
+    // Calculate total hours and daily averages
+    let totalHours = 0;
+    let daysWorked = new Set();
+    
+    // Group entries by day for accurate calculations
+    const entriesByDay = {};
+    entries.forEach(entry => {
+      const day = new Date(entry.timestamp).toISOString().split('T')[0];
+      if (!entriesByDay[day]) {
+        entriesByDay[day] = [];
+      }
+      entriesByDay[day].push(entry);
+    });
+
+    // Calculate hours for each day
+    for (const [day, dayEntries] of Object.entries(entriesByDay)) {
+      let dayHours = 0;
+      let lastClockIn = null;
+      let onBreak = false;
+      let lastBreakStart = null;
+      
+      // Sort entries by timestamp
+      dayEntries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      
+      for (const entry of dayEntries) {
+        const entryTime = new Date(entry.timestamp);
+        
+        if (entry.action === 'IN') {
+          lastClockIn = entryTime;
+        } else if (entry.action === 'OUT' && lastClockIn) {
+          dayHours += (entryTime - lastClockIn) / (1000 * 60 * 60);
+          lastClockIn = null;
+        } else if (entry.action === 'BREAK_START') {
+          onBreak = true;
+          lastBreakStart = entryTime;
+        } else if (entry.action === 'BREAK_END' && lastBreakStart) {
+          dayHours -= (entryTime - lastBreakStart) / (1000 * 60 * 60);
+          onBreak = false;
+          lastBreakStart = null;
+        }
+      }
+
+      // Handle ongoing shift
+      if (lastClockIn) {
+        const now = new Date();
+        const duration = (now - lastClockIn) / (1000 * 60 * 60);
+        if (onBreak && lastBreakStart) {
+          const breakDuration = (now - lastBreakStart) / (1000 * 60 * 60);
+          dayHours += (duration - breakDuration);
+        } else {
+          dayHours += duration;
+        }
+      }
+
+      if (dayHours > 0) {
+        totalHours += dayHours;
+        daysWorked.add(day);
+      }
+    }
+
+    const stats = {
+      totalHours: parseFloat(totalHours.toFixed(2)),
+      averageHoursPerDay: daysWorked.size > 0 ? parseFloat((totalHours / daysWorked.size).toFixed(2)) : 0,
+      daysWorked: daysWorked.size
+    };
+
     console.log('Found entries:', entries.length);
-    res.json(entries);
+    console.log('Stats:', stats);
+    
+    res.json({
+      entries: entries,
+      stats: stats
+    });
   } catch (error) {
     console.error('Error fetching time entries:', error);
     res.status(500).json({ error: 'Failed to fetch time entries', details: error.message });

@@ -92,7 +92,7 @@ const useTimeStore = create((set, get) => ({
         throw new Error('Failed to fetch time entries');
       }
 
-      const data = await response.json();
+      const { entries: data, stats } = await response.json();
 
       // Group entries by date
       const groupedEntries = data.reduce((acc, entry) => {
@@ -146,8 +146,17 @@ const useTimeStore = create((set, get) => ({
 
       const authData = await authResponse.json();
 
-      set({ entries: sortedEntries, authHistory: authData });
-      get().calculateSummary(sortedEntries);
+      set({ 
+        entries: sortedEntries, 
+        authHistory: authData,
+        summary: {
+          totalHours: stats.totalHours.toFixed(2),
+          averageHoursPerDay: stats.averageHoursPerDay.toFixed(2),
+          daysWorked: stats.daysWorked,
+          mostFrequentClockIn: get().summary.mostFrequentClockIn,
+          mostFrequentClockOut: get().summary.mostFrequentClockOut
+        }
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {

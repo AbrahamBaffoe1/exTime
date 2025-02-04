@@ -19,7 +19,7 @@ const PaymentForm = ({ onSuccess, onCancel }) => {
     setError(null);
 
     try {
-      // Create payment intent
+      // Create subscription
       const response = await fetch('http://localhost:3000/api/payment/create-payment-intent', {
         method: 'POST',
         headers: { 
@@ -29,22 +29,28 @@ const PaymentForm = ({ onSuccess, onCancel }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create payment intent');
+        throw new Error('Failed to create subscription');
       }
 
-      const { clientSecret } = await response.json();
+      const { clientSecret, subscriptionId } = await response.json();
 
-      // Confirm payment
+      // Confirm subscription payment
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
+          billing_details: {
+            email: localStorage.getItem('userEmail') // Make sure to store user's email in localStorage during login
+          }
         }
       });
 
       if (stripeError) {
         setError(stripeError.message);
       } else if (paymentIntent.status === 'succeeded') {
-        onSuccess();
+        // Wait a moment for webhook to process
+        setTimeout(() => {
+          onSuccess();
+        }, 2000);
       }
     } catch (err) {
       setError(err.message);

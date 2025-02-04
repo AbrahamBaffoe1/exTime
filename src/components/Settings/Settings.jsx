@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useSettings } from '../SettingsContext/SettingsContext';
 import { useTheme } from '../ThemeContext/ThemeContext';
 import { useLocation } from 'react-router-dom';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import PaymentForm from '../PaymentForm/PaymentForm';
 import { 
   Settings as SettingsIcon, Clock, Bell, Sun, 
   RotateCcw, Crown, Lock, ChevronRight, Shield, 
@@ -18,6 +21,8 @@ const Settings = () => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
   // Handle scroll effects
   useEffect(() => {
@@ -118,18 +123,21 @@ const Settings = () => {
     }
   };
 
-  const handleUpgradeClick = async () => {
-    setLoading(true);
-    try {
-      await initiateCheckout();
-    } catch (error) {
-      setNotification({
-        type: 'error',
-        message: 'Failed to initiate checkout. Please try again.'
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleUpgradeClick = () => {
+    setShowPaymentForm(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPaymentForm(false);
+    updateSettings({ isPremium: true });
+    setNotification({
+      type: 'success',
+      message: 'Successfully upgraded to Premium!'
+    });
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPaymentForm(false);
   };
 
   return (
@@ -201,14 +209,23 @@ const Settings = () => {
                       <span className="price">$9.99</span>
                       <span className="period">/month</span>
                     </div>
-                    <button 
-                      className="upgrade-button"
-                      onClick={handleUpgradeClick}
-                      disabled={loading}
-                    >
-                      <span>Upgrade Now</span>
-                      <div className="button-glow"></div>
-                    </button>
+                    {showPaymentForm ? (
+                      <Elements stripe={stripePromise}>
+                        <PaymentForm 
+                          onSuccess={handlePaymentSuccess}
+                          onCancel={handlePaymentCancel}
+                        />
+                      </Elements>
+                    ) : (
+                      <button 
+                        className="upgrade-button"
+                        onClick={handleUpgradeClick}
+                        disabled={loading}
+                      >
+                        <span>Upgrade Now</span>
+                        <div className="button-glow"></div>
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (

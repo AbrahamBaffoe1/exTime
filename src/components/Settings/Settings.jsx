@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../SettingsContext/SettingsContext';
+import { useTheme } from '../ThemeContext/ThemeContext';
 import { useLocation } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, Clock, Bell, Sun, 
@@ -11,6 +12,7 @@ import './Settings.css';
 const Settings = () => {
   const location = useLocation();
   const { settings, updateSettings, resetSettings, errors } = useSettings();
+  const { theme, setTheme, themes: THEMES } = useTheme();
   const [activeSection, setActiveSection] = useState('premium');
   const [isScrolled, setIsScrolled] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -298,15 +300,24 @@ const Settings = () => {
             <div className="appearance-section">
               <h2>Theme Selection</h2>
               <div className="theme-options">
-                {['light', 'dark', 'system'].map((theme) => (
-                  <button
-                    key={theme}
-                    className={`theme-button ${settings.theme === theme ? 'active' : ''}`}
-                    onClick={() => handleSettingChange('theme', theme)}
-                  >
-                    {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                  </button>
-                ))}
+                <button
+                  className={`theme-button ${theme === THEMES.LIGHT ? 'active' : ''}`}
+                  onClick={() => setTheme(THEMES.LIGHT)}
+                >
+                  Light
+                </button>
+                <button
+                  className={`theme-button ${theme === THEMES.DARK ? 'active' : ''}`}
+                  onClick={() => setTheme(THEMES.DARK)}
+                >
+                  Dark
+                </button>
+                <button
+                  className={`theme-button ${theme === THEMES.SYSTEM ? 'active' : ''}`}
+                  onClick={() => setTheme(THEMES.SYSTEM)}
+                >
+                  System
+                </button>
               </div>
             </div>
           )}

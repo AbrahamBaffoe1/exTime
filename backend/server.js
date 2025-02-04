@@ -12,12 +12,15 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+// This line must come before any routes that use express.json()
+app.use('/api/payment/webhook', express.raw({type: 'application/json'}));
 app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/time-entries', require('./routes/timeEntries'));
 app.use('/api/auth-history', require('./routes/authHistory.js'));
+app.use('/api/payment', require('./routes/payment'));
 
 // Database connection and sync
 sequelize.sync() // Sync without dropping tables

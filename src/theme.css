@@ -1,7 +1,90 @@
-/* Global theme styles for light and dark modes */
+/* Global theme variables */
+:root {
+  /* Light theme variables */
+  --background-primary: #ffffff;
+  --background-secondary: #f5f5f5;
+  --text-primary: #141414;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+  --accent-color: #E50914;
+  --accent-hover: #F40612;
+  --card-bg: #ffffff;
+  --input-bg: #f8f8f8;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  --background-primary: #141414;
+  --background-secondary: #181818;
+  --text-primary: #ffffff;
+  --text-secondary: #B3B3B3;
+  --border-color: #2F2F2F;
+  --accent-color: #E50914;
+  --accent-hover: #F40612;
+  --card-bg: #181818;
+  --input-bg: #2F2F2F;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* System theme preference */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --background-primary: #141414;
+    --background-secondary: #181818;
+    --text-primary: #ffffff;
+    --text-secondary: #B3B3B3;
+    --border-color: #2F2F2F;
+    --accent-color: #E50914;
+    --accent-hover: #F40612;
+    --card-bg: #181818;
+    --input-bg: #2F2F2F;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --background-primary: #ffffff;
+    --background-secondary: #f5f5f5;
+    --text-primary: #141414;
+    --text-secondary: #666666;
+    --border-color: #e0e0e0;
+    --accent-color: #E50914;
+    --accent-hover: #F40612;
+    --card-bg: #ffffff;
+    --input-bg: #f8f8f8;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Global styles */
+body {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--accent-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-hover);
+}
 
 /* Reset section and button styles */
-/* .reset-section {
+.reset-section {
     display: flex;
     justify-content: center;
     margin-top: 1rem;
@@ -87,5 +170,4 @@
   
   .dark ::-webkit-scrollbar-thumb:hover {
     background-color: #666;
-  } 
-
+  }

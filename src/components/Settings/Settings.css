@@ -1,21 +1,7 @@
-
-/* Netflix-inspired Variables */
-:root {
-  --netflix-red: #E50914;
-  --netflix-red-hover: #F40612;
-  --netflix-black: #141414;
-  --netflix-dark-gray: #181818;
-  --netflix-light-gray: #2F2F2F;
-  --netflix-text: #FFFFFF;
-  --netflix-text-secondary: #B3B3B3;
-  --card-gradient: linear-gradient(45deg, rgba(20,20,20,0.7) 0%, rgba(20,20,20,0.3) 100%);
-  --hover-gradient: linear-gradient(45deg, rgba(229,9,20,0.1) 0%, rgba(229,9,20,0.05) 100%);
-}
-
 /* Base Styles */
 body {
-  background-color: var(--netflix-black);
-  color: var(--netflix-text);
+  background-color: var(--background-primary);
+  color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
   line-height: 1.5;
@@ -23,9 +9,8 @@ body {
 
 .settings-container {
   min-height: 100vh;
-  background: var(--netflix-black);
+  background: var(--background-primary);
   position: relative;
- 
 }
 
 /* Header Styles */
@@ -33,24 +18,22 @@ body {
   position: sticky;
   top: 0;
   padding: 1.5rem 2rem;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+  background: linear-gradient(to bottom, var(--shadow-color) 0%, transparent 100%);
   z-index: 10;
   transition: all 0.3s ease;
   margin-bottom: 2rem;
 }
 
 .settings-header.scrolled {
-  background: var(--netflix-black);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  background: var(--background-primary);
+  box-shadow: 0 4px 20px var(--shadow-color);
 }
 
 .settings-header h1 {
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(to right, #FFFFFF, #B3B3B3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
   transition: transform 0.3s ease;
 }
 
@@ -71,8 +54,8 @@ body {
 
 .nav-card {
   position: relative;
-  background: var(--card-gradient);
-  border: 1px solid var(--netflix-light-gray);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 0.75rem;
   padding: 1.5rem;
   cursor: pointer;
@@ -91,24 +74,24 @@ body {
 .nav-card-backdrop {
   position: absolute;
   inset: 0;
-  background: var(--hover-gradient);
+  background: var(--shadow-color);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .nav-card:hover .nav-card-backdrop {
-  opacity: 1;
+  opacity: 0.1;
 }
 
 .nav-card.active {
-  border-color: var(--netflix-red);
+  border-color: var(--accent-color);
   transform: scale(1.02);
 }
 
 .nav-card-icon {
   width: 2rem;
   height: 2rem;
-  color: var(--netflix-red);
+  color: var(--accent-color);
 }
 
 .nav-card-text {
@@ -119,11 +102,12 @@ body {
   margin: 0 0 0.25rem;
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .nav-card-text p {
   margin: 0;
-  color: var(--netflix-text-secondary);
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
@@ -133,6 +117,7 @@ body {
   opacity: 0;
   transform: translateX(-1rem);
   transition: all 0.3s ease;
+  color: var(--text-secondary);
 }
 
 .nav-card:hover .nav-card-arrow {
@@ -142,7 +127,7 @@ body {
 
 /* Premium Section */
 .premium-section {
-  background: var(--netflix-dark-gray);
+  background: var(--card-bg);
   border-radius: 1rem;
   overflow: hidden;
 }
@@ -150,23 +135,24 @@ body {
 .premium-header {
   text-align: center;
   padding: 3rem 2rem;
-  background: linear-gradient(45deg, rgba(229,9,20,0.1) 0%, rgba(229,9,20,0.05) 100%);
+  background: linear-gradient(45deg, var(--shadow-color) 0%, transparent 100%);
 }
 
 .premium-icon {
   width: 4rem;
   height: 4rem;
-  color: var(--netflix-red);
+  color: var(--accent-color);
   margin-bottom: 1.5rem;
 }
 
 .premium-header h2 {
   font-size: 2.5rem;
   margin: 0 0 1rem;
+  color: var(--text-primary);
 }
 
 .premium-header p {
-  color: var(--netflix-text-secondary);
+  color: var(--text-secondary);
   font-size: 1.25rem;
   margin: 0;
 }
@@ -179,7 +165,7 @@ body {
 }
 
 .premium-feature-card {
-  background: rgba(255,255,255,0.05);
+  background: var(--input-bg);
   border-radius: 0.75rem;
   padding: 1.5rem;
   transition: transform 0.3s ease;
@@ -192,24 +178,25 @@ body {
 .feature-icon {
   width: 2.5rem;
   height: 2.5rem;
-  color: var(--netflix-red);
+  color: var(--accent-color);
   margin-bottom: 1rem;
 }
 
 .premium-feature-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
+  color: var(--text-primary);
 }
 
 .premium-feature-card p {
   margin: 0;
-  color: var(--netflix-text-secondary);
+  color: var(--text-secondary);
 }
 
 .premium-pricing {
   text-align: center;
   padding: 3rem 2rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 100%);
+  background: linear-gradient(to top, var(--shadow-color) 0%, transparent 100%);
 }
 
 .price-tag {
@@ -219,15 +206,16 @@ body {
 .price {
   font-size: 3.5rem;
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 .period {
-  color: var(--netflix-text-secondary);
+  color: var(--text-secondary);
 }
 
 .upgrade-button {
   position: relative;
-  background: var(--netflix-red);
+  background: var(--accent-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -240,7 +228,7 @@ body {
 }
 
 .upgrade-button:hover {
-  background: var(--netflix-red-hover);
+  background: var(--accent-hover);
   transform: translateY(-2px);
 }
 
@@ -258,7 +246,7 @@ body {
 
 /* Appearance Section */
 .appearance-section {
-  background: var(--netflix-dark-gray);
+  background: var(--card-bg);
   border-radius: 1rem;
   padding: 2rem;
 }
@@ -270,6 +258,7 @@ body {
 .setting-group h2 {
   font-size: 1.5rem;
   margin: 0 0 1.5rem;
+  color: var(--text-primary);
 }
 
 .theme-options {
@@ -278,27 +267,28 @@ body {
 }
 
 .theme-button {
-  background: rgba(255,255,255,0.1);
-  border: none;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 0.75rem 1.5rem;
-  color: var(--netflix-text);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .theme-button:hover {
-  background: rgba(255,255,255,0.2);
+  background: var(--background-secondary);
 }
 
 .theme-button.active {
-  background: var(--netflix-red);
+  background: var(--accent-color);
   color: white;
+  border-color: var(--accent-color);
 }
 
 /* Time Settings Section */
 .time-settings {
-  background: var(--netflix-dark-gray);
+  background: var(--card-bg);
   border-radius: 1rem;
   padding: 2rem;
 }
@@ -314,14 +304,14 @@ body {
   position: relative;
   width: 60px;
   height: 32px;
-  background: rgba(255,255,255,0.1);
+  background: var(--input-bg);
   border-radius: 16px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .toggle-switch.active {
-  background: var(--netflix-red);
+  background: var(--accent-color);
 }
 
 .toggle-switch::after {
@@ -342,7 +332,7 @@ body {
 
 /* Notification Settings */
 .notification-settings {
-  background: var(--netflix-dark-gray);
+  background: var(--card-bg);
   border-radius: 1rem;
   padding: 2rem;
 }
@@ -353,13 +343,13 @@ body {
   align-items: center;
   padding: 1.5rem;
   border-radius: 0.75rem;
-  background: rgba(255,255,255,0.05);
+  background: var(--input-bg);
   margin-bottom: 1rem;
   transition: all 0.3s ease;
 }
 
 .notification-option:hover {
-  background: rgba(255,255,255,0.1);
+  background: var(--background-secondary);
 }
 
 .notification-info {
@@ -369,57 +359,37 @@ body {
 .notification-info h3 {
   margin: 0 0 0.5rem;
   font-size: 1.125rem;
+  color: var(--text-primary);
 }
 
 .notification-info p {
   margin: 0;
-  color: var(--netflix-text-secondary);
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
 /* Input Styles */
 .settings-input {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 0.75rem 1rem;
-  color: var(--netflix-text);
+  color: var(--text-primary);
   width: 100%;
   transition: all 0.3s ease;
 }
 
 .settings-input:focus {
   outline: none;
-  border-color: var(--netflix-red);
-  background: rgba(255,255,255,0.15);
-}
-
-/* Animation Keyframes */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  border-color: var(--accent-color);
+  background: var(--background-secondary);
 }
 
 /* Loading States */
 .loading-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: var(--shadow-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -429,8 +399,8 @@ body {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255,255,255,0.1);
-  border-top-color: var(--netflix-red);
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -443,7 +413,7 @@ body {
 
 /* Error States */
 .error-message {
-  color: var(--netflix-red);
+  color: var(--accent-color);
   font-size: 0.875rem;
   margin-top: 0.5rem;
   display: flex;
@@ -452,7 +422,7 @@ body {
 }
 
 .input-error {
-  border-color: var(--netflix-red);
+  border-color: var(--accent-color);
 }
 
 /* Responsive Design */
@@ -486,20 +456,6 @@ body {
   }
 }
 
-/* High Contrast Mode */
-@media (prefers-contrast: high) {
-  :root {
-    --netflix-red: #FF0000;
-    --netflix-text-secondary: #FFFFFF;
-  }
-
-  .nav-card,
-  .premium-feature-card,
-  .notification-option {
-    border: 2px solid white;
-  }
-}
-
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -508,40 +464,6 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Dark Mode Enhancements */
-@media (prefers-color-scheme: dark) {
-  .nav-card {
-    background: linear-gradient(45deg, rgba(40,40,40,0.7) 0%, rgba(40,40,40,0.3) 100%);
-  }
-
-  .premium-feature-card {
-    background: rgba(40,40,40,0.8);
-  }
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--netflix-black);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--netflix-red);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--netflix-red-hover);
-}
-
-::-webkit-scrollbar-corner {
-  background: var(--netflix-black);
 }
 
 /* Accessibility Styles */
@@ -559,6 +481,6 @@ body {
 
 /* Accessibility Focus Styles */
 .focus-visible {
-  outline: 2px solid var(--netflix-red);
+  outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }

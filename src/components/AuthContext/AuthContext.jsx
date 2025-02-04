@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const validateToken = async () => {
       setIsLoading(true);
-      console.log('Validating token:', token);
+      // console.log('Validating token:', token);
 
       if (token) {
         try {
@@ -76,20 +76,20 @@ export const AuthProvider = ({ children }) => {
             },
           });
 
-          console.log('Validation response status:', response.status);
+          // console.log('Validation response status:', response.status);
 
           if (response.ok) {
             const userData = await response.json();
-            console.log('Validated user:', userData);
+            // console.log('Validated user:', userData);
             setUser(userData);
             setIsAuthenticated(true);
           } else {
             // Token is invalid
-            console.log('Token validation failed');
+            // console.log('Token validation failed');
             logout();
           }
         } catch (error) {
-          console.error('Token validation error:', error);
+          // console.error('Token validation error:', error);
           logout();
         } finally {
           setIsLoading(false);

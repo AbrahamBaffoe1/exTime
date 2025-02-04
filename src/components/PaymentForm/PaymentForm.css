@@ -1,0 +1,67 @@
+.payment-form {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--background-secondary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-element-container {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--background-primary);
+  margin-bottom: 20px;
+}
+
+.payment-error {
+  color: var(--error);
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 4px;
+  background: rgba(255, 0, 0, 0.1);
+  font-size: 14px;
+}
+
+.payment-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.submit-button,
+.cancel-button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submit-button {
+  background: var(--primary);
+  color: white;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.cancel-button {
+  background: var(--background-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: var(--background-secondary);
+}
+
+.submit-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -31,24 +31,29 @@ export const ThemeProvider = ({ children }) => {
     return systemTheme;
   });
 
+  // Effect to handle system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleSystemThemeChange = (e) => {
+      if (theme === THEMES.SYSTEM) {
+        applyTheme(e.matches ? THEMES.DARK : THEMES.LIGHT);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+  }, [theme]);
+
   // Effect to apply theme to document
   useEffect(() => {
-    // Remove previous theme classes
-    document.documentElement.classList.remove(
-      THEMES.LIGHT, 
-      THEMES.DARK
-    );
-
-    // Apply current theme
-    if (theme === THEMES.DARK) {
-      document.documentElement.classList.add(THEMES.DARK);
-      document.documentElement.style.colorScheme = 'dark';
-    } else {
-      document.documentElement.classList.add(THEMES.LIGHT);
-      document.documentElement.style.colorScheme = 'light';
-    }
-
-    // Save to localStorage
+    // Set data-theme attribute on html element
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Set color-scheme for system UI elements
+    document.documentElement.style.colorScheme = theme === THEMES.DARK ? 'dark' : 'light';
+    
+    // Save theme preference
     localStorage.setItem('app-theme', theme);
   }, [theme]);
 
@@ -57,7 +62,8 @@ export const ThemeProvider = ({ children }) => {
     setTheme(prevTheme => {
       switch(prevTheme) {
         case THEMES.LIGHT: return THEMES.DARK;
-        case THEMES.DARK: return THEMES.LIGHT;
+        case THEMES.DARK: return THEMES.SYSTEM;
+        case THEMES.SYSTEM: return THEMES.LIGHT;
         default: return THEMES.LIGHT;
       }
     });

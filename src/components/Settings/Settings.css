@@ -25,18 +25,18 @@ body {
   min-height: 100vh;
   background: var(--netflix-black);
   position: relative;
+ 
 }
 
 /* Header Styles */
 .settings-header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   padding: 1.5rem 2rem;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
-  z-index: 1000;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+  z-index: 10;
   transition: all 0.3s ease;
+  margin-bottom: 2rem;
 }
 
 .settings-header.scrolled {
@@ -58,7 +58,7 @@ body {
 .settings-main {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 8rem 2rem 2rem;
+  padding: 0 2rem 2rem;
 }
 
 /* Navigation Cards */
@@ -561,4 +561,4 @@ body {
 .focus-visible {
   outline: 2px solid var(--netflix-red);
   outline-offset: 2px;
-}   
+}

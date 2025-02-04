@@ -149,8 +149,8 @@ router.get('/', authenticateToken, async (req, res) => {
 // Get the last time entry and break state for a user
 router.get('/last', authenticateToken, async (req, res) => {
   try {
-    // Get the last clock in/out entry
-    const lastEntry = await TimeEntry.findOne({
+    console.log('Fetching last entry for user:', req.user.id);
+    const query = {
       where: { 
         userId: req.user.id,
         action: {
@@ -165,7 +165,16 @@ router.get('/last', authenticateToken, async (req, res) => {
           attributes: ['id', 'username', 'firstName', 'lastName']
         }
       ]
-    });
+    };
+    console.log('Query conditions:', JSON.stringify(query.where, null, 2));
+    
+    // Get the last clock in/out entry
+    const lastEntry = await TimeEntry.findOne(query);
+    console.log('Last entry found:', lastEntry ? 'Yes' : 'No');
+    if (lastEntry) {
+      console.log('Last entry action:', lastEntry.action);
+      console.log('Last entry timestamp:', lastEntry.timestamp);
+    }
 
     // If user is clocked in, check for any active break
     let breakState = null;

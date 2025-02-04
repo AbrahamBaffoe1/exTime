@@ -46,7 +46,7 @@ async function initializeDatabase() {
 
     // Read and execute the schema file
     console.log('Applying database schema...');
-    const schemaPath = path.join(__dirname, 'init.sql');
+    const schemaPath = path.join(__dirname, '../schema.sql');
     const schema = fs.readFileSync(schemaPath, 'utf8');
 
     // Connect to the new database

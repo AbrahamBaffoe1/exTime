@@ -63,6 +63,7 @@ const TimeClock = () => {
               status: data.lastEntry.action === 'IN' ? 'IN' : 'OUT',
               lastClockIn: data.lastEntry.action === 'IN' ? data.lastEntry.timestamp : prev.lastClockIn,
               category: data.lastEntry.category || 'regular',
+              shiftNotes: data.lastEntry.notes || '',
               // Restore break state if available
               ...(data.breakState && {
                 isOnBreak: data.breakState.isOnBreak,

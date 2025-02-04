@@ -1,7 +1,7 @@
 /* Global theme styles for light and dark modes */
 
 /* Reset section and button styles */
-.reset-section {
+/* .reset-section {
     display: flex;
     justify-content: center;
     margin-top: 1rem;
@@ -29,7 +29,7 @@
   }
   
   /* Dark theme styles */
-  .dark {
+  /* .dark {
     background-color: #1a1a1a;
     color: #e0e0e0;
   }
@@ -55,19 +55,19 @@
     background-color: #4a4a4a;
     color: #e0e0e0;
     border-color: #5a5a5a;
-  }
+  } */
   
-  .dark .setting-item select:focus {
+  /* .dark .setting-item select:focus {
     border-color: #007bff;
-  }
-  
+  } */
+   
   /* Additional global theme utilities */
-  body {
+  /* body {
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-  
+   */
   /* Scrollbar styles for dark mode */
-  .dark {
+  /* .dark {
     scrollbar-width: thin;
     scrollbar-color: #555 #333;
   }
@@ -87,4 +87,5 @@
   
   .dark ::-webkit-scrollbar-thumb:hover {
     background-color: #666;
-  }
+  } 
+

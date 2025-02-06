@@ -39,16 +39,17 @@ router.post('/create-payment-intent', authenticateToken, async (req, res) => {
     // Save subscription details to database
     await sequelize.query(
       `INSERT INTO subscriptions (user_id, stripe_subscription_id, stripe_customer_id, status, current_period_start, current_period_end)
-       VALUES ($1, $2, $3, $4, to_timestamp($5), to_timestamp($6))`,
+       VALUES (:userId, :subscriptionId, :customerId, :status, to_timestamp(:periodStart), to_timestamp(:periodEnd))`,
       {
-        bind: [
-          req.user.id,
-          subscription.id,
-          customer.id,
-          subscription.status,
-          subscription.current_period_start,
-          subscription.current_period_end
-        ]
+        replacements: {
+          userId: req.user.id,
+          subscriptionId: subscription.id,
+          customerId: customer.id,
+          status: subscription.status,
+          periodStart: subscription.current_period_start,
+          periodEnd: subscription.current_period_end
+        },
+        type: sequelize.QueryTypes.INSERT
       }
     );
 
@@ -85,17 +86,18 @@ router.post('/webhook', express.raw({type: 'application/json'}), async (req, res
     try {
       await sequelize.query(
         `UPDATE subscriptions 
-         SET status = $1, 
-             current_period_start = to_timestamp($2),
-             current_period_end = to_timestamp($3)
-         WHERE stripe_subscription_id = $4`,
+         SET status = :status, 
+             current_period_start = to_timestamp(:periodStart),
+             current_period_end = to_timestamp(:periodEnd)
+         WHERE stripe_subscription_id = :subscriptionId`,
         {
-          bind: [
-            subscription.status,
-            subscription.current_period_start,
-            subscription.current_period_end,
-            subscription.id
-          ]
+          replacements: {
+            status: subscription.status,
+            periodStart: subscription.current_period_start,
+            periodEnd: subscription.current_period_end,
+            subscriptionId: subscription.id
+          },
+          type: sequelize.QueryTypes.UPDATE
         }
       );
 
@@ -107,10 +109,13 @@ router.post('/webhook', express.raw({type: 'application/json'}), async (req, res
            WHERE id = (
              SELECT user_id 
              FROM subscriptions 
-             WHERE stripe_subscription_id = $1
+             WHERE stripe_subscription_id = :subscriptionId
            )`,
           {
-            bind: [subscription.id]
+            replacements: {
+              subscriptionId: subscription.id
+            },
+            type: sequelize.QueryTypes.UPDATE
           }
         );
       }

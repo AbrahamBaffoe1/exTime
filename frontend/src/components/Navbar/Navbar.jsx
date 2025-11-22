@@ -21,11 +21,8 @@ const Navbar = ({ navItems }) => {
       <div className="navbar-container">
         <div className="navbar-brand">
           <NavLink to="/" className="logo">
-            TimeTrack
+            exTime
           </NavLink>
-          <button className="mobile-menu-button" onClick={toggleMobileMenu}>
-            {isMobileMenuOpen ? <X /> : <Menu />}
-          </button>
         </div>
 
         <div className={`navbar-links ${isMobileMenuOpen ? 'open' : ''}`}>
@@ -38,7 +35,7 @@ const Navbar = ({ navItems }) => {
                 className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Icon className="nav-icon" />
+                <Icon className="nav-icon" size={18} />
                 <span>{item.label}</span>
               </NavLink>
             );
@@ -46,21 +43,37 @@ const Navbar = ({ navItems }) => {
         </div>
 
         <div className="navbar-actions">
-          <div className="user-info">
-            <div className="user-status online"></div>
-            <span className="username">
-              {user?.firstName 
-                ? `${user.firstName} ${user.lastName || ''}`.trim() 
-                : user?.username || 'User'}
-            </span>
-            <button 
-              className="logout-button" 
-              onClick={handleLogout}
-              title="Logout"
-            >
-              <LogOut size={20} />
-            </button>
+          <div className="user-profile">
+            <div className="user-avatar">
+              {user?.firstName
+                ? user.firstName.charAt(0).toUpperCase()
+                : user?.username?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="user-details">
+              <span className="user-name">
+                {user?.firstName
+                  ? `${user.firstName} ${user.lastName || ''}`.trim()
+                  : user?.username || 'User'}
+              </span>
+              <span className="user-status">
+                <span className="status-dot"></span>
+                Active
+              </span>
+            </div>
           </div>
+
+          <button
+            className="logout-button"
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+
+          <button className="mobile-menu-button" onClick={toggleMobileMenu}>
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
     </nav>

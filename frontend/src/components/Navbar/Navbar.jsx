@@ -47,7 +47,7 @@ const Navbar = ({ navItems }) => {
             <div className="user-avatar">
               {user?.firstName
                 ? user.firstName.charAt(0).toUpperCase()
-                : user?.username?.charAt(0).toUpperCase() || 'U'}
+                : user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="user-details">
               <span className="user-name">

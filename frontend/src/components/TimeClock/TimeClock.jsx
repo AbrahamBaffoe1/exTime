@@ -246,174 +246,174 @@ const TimeClock = () => {
 
   return (
     <div className="time-clock-container">
-      {/* User Welcome Section */}
-      <div className="user-info">
-        <span>Welcome, {user?.firstName || user?.username}</span>
-      </div>
-
-      {/* Time Display Section */}
-      <div className="time-display-section">
-        <div className="current-time">
-          <Clock className="time-icon" />
-          {format(currentTime, 'HH:mm:ss')}
-        </div>
-        <div className="date">
-          {format(currentTime, 'EEEE, MMMM d, yyyy')}
-        </div>
-      </div>
-
-      {/* Status and Actions Section */}
-      <div className="status-and-actions">
-        <div className="status-display">
-          <div className="status-label">Current Status</div>
-          <div className={`status-badge ${clockState.status.toLowerCase()}`}>
-            <div className="status-dot"></div>
-            <span>{clockState.status}</span>
-            {clockState.isOnBreak && (
-              <span className="break-indicator">On Break</span>
-            )}
-          </div>
+      {/* LEFT COLUMN */}
+      <div className="left-column">
+        <div className="user-info">
+          <span>Welcome, {user?.firstName || user?.username}</span>
         </div>
 
-        <div className="clock-actions">
-          <button
-            className="clock-button clock-in"
-            onClick={() => handleClockAction('IN')}
-            disabled={isLoading || clockState.status === 'IN'}
-          >
-            <LogIn size={20} />
-            Clock In
-          </button>
-          <button
-            className="clock-button clock-out"
-            onClick={() => handleClockAction('OUT')}
-            disabled={isLoading || clockState.status === 'OUT'}
-          >
-            <LogOut size={20} />
-            Clock Out
-          </button>
-        </div>
-      </div>
-
-      {/* Categories Section */}
-      <div className="categories-section">
-        <div className="section-title">Shift Category</div>
-        <div className="categories-list">
-          {SHIFT_CATEGORIES.map(category => (
-            <button
-              key={category.id}
-              className={`category-button ${clockState.category === category.id ? 'active' : ''}`}
-              onClick={() => handleCategoryChange(category.id)}
-              style={{'--category-color': category.color}}
-              disabled={clockState.status === 'IN'}
-            >
-              <Tag className="category-icon" />
-              {category.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Alerts Section */}
-      {clockState.alerts.length > 0 && (
-        <div className="alerts-section">
-          {clockState.alerts.map((alert, index) => (
-            <div key={index} className={`alert ${alert.type}`}>
-              <AlertCircle className="alert-icon" />
-              {alert.message}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Time Info and Break Section */}
-      {clockState.status === 'IN' && (
-        <div className="time-tracking-section">
-          <div className="time-info">
-            <div className="info-item elapsed-time">
-              <div className="info-label">Time Worked</div>
-              <div className="info-value">{formatTime(clockState.elapsedTime)}</div>
-            </div>
-            <div className="info-item break-time">
-              <div className="info-label">Break Time</div>
-              <div className="info-value">{formatTime(clockState.totalBreakTime)}</div>
-            </div>
-          </div>
-
-          <button
-            className={`break-button ${clockState.isOnBreak ? 'end-break' : 'start-break'}`}
-            onClick={handleBreak}
-            disabled={isLoading}
-          >
-            <Coffee className="break-icon" />
-            {isLoading ? 'Processing...' : clockState.isOnBreak ? 'End Break' : 'Start Break'}
-          </button>
-        </div>
-      )}
-
-      {/* Notes Section */}
-      <div className="notes-section">
-        <button
-          className="notes-toggle"
-          onClick={() => setShowNotes(!showNotes)}
-        >
-          <BookOpen className="notes-icon" />
-          {showNotes ? 'Hide Notes' : 'Add Shift Notes'}
-        </button>
-
-        {showNotes && (
-          <textarea
-            className="shift-notes"
-            value={clockState.shiftNotes}
-            onChange={handleNotesChange}
-            placeholder="Add notes about your shift..."
-            disabled={clockState.status === 'OUT'}
-            rows="4"
-          />
-        )}
-      </div>
-
-      {/* Break History */}
-      {clockState.breaks.length > 0 && (
-        <div className="breaks-summary">
-          <h3>Break History</h3>
-          <div className="breaks-list">
-            {clockState.breaks.map((breakItem, index) => (
-              <div key={index} className="break-item">
-                <div className="break-time-range">
-                  {format(new Date(breakItem.start), 'HH:mm')} - {format(new Date(breakItem.end), 'HH:mm')}
-                </div>
-                <div className="break-duration">
-                  {formatTime(breakItem.duration)}
-                </div>
-              </div>
+        <div className="categories-section">
+          <div className="section-title">Shift Category</div>
+          <div className="categories-list">
+            {SHIFT_CATEGORIES.map(category => (
+              <button
+                key={category.id}
+                className={`category-button ${clockState.category === category.id ? 'active' : ''}`}
+                onClick={() => handleCategoryChange(category.id)}
+                style={{'--category-color': category.color}}
+                disabled={clockState.status === 'IN'}
+              >
+                <Tag className="category-icon" />
+                {category.label}
+              </button>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Shift Summary */}
-      <div className="shift-summary">
-        {clockState.lastClockIn && (
-          <div className="summary-item">
-            <span className="summary-label">Started:</span>
-            <span className="summary-value">
-              {format(new Date(clockState.lastClockIn), 'hh:mm a')}
-            </span>
+        <div className="notes-section">
+          <button
+            className="notes-toggle"
+            onClick={() => setShowNotes(!showNotes)}
+          >
+            <BookOpen className="notes-icon" />
+            {showNotes ? 'Hide Notes' : 'Add Shift Notes'}
+          </button>
+
+          {showNotes && (
+            <textarea
+              className="shift-notes"
+              value={clockState.shiftNotes}
+              onChange={handleNotesChange}
+              placeholder="Add notes about your shift..."
+              disabled={clockState.status === 'OUT'}
+              rows="4"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* CENTER COLUMN */}
+      <div className="center-column">
+        <div className="time-display-section">
+          <div className="current-time">
+            <Clock className="time-icon" />
+            {format(currentTime, 'HH:mm:ss')}
+          </div>
+          <div className="date">
+            {format(currentTime, 'EEEE, MMMM d, yyyy')}
+          </div>
+        </div>
+
+        <div className="status-and-actions">
+          <div className="status-display">
+            <div className="status-label">Current Status</div>
+            <div className={`status-badge ${clockState.status.toLowerCase()}`}>
+              <div className="status-dot"></div>
+              <span>{clockState.status}</span>
+              {clockState.isOnBreak && (
+                <span className="break-indicator">On Break</span>
+              )}
+            </div>
+          </div>
+
+          <div className="clock-actions">
+            <button
+              className="clock-button clock-in"
+              onClick={() => handleClockAction('IN')}
+              disabled={isLoading || clockState.status === 'IN'}
+            >
+              <LogIn size={20} />
+              Clock In
+            </button>
+            <button
+              className="clock-button clock-out"
+              onClick={() => handleClockAction('OUT')}
+              disabled={isLoading || clockState.status === 'OUT'}
+            >
+              <LogOut size={20} />
+              Clock Out
+            </button>
+          </div>
+        </div>
+
+        {clockState.alerts.length > 0 && (
+          <div className="alerts-section">
+            {clockState.alerts.map((alert, index) => (
+              <div key={index} className={`alert ${alert.type}`}>
+                <AlertCircle className="alert-icon" />
+                {alert.message}
+              </div>
+            ))}
           </div>
         )}
-        {clockState.category !== 'regular' && (
-          <div className="summary-item">
-            <span className="summary-label">Category:</span>
-            <span className="summary-value">
-              {SHIFT_CATEGORIES.find(c => c.id === clockState.category)?.label}
-            </span>
+      </div>
+
+      {/* RIGHT COLUMN */}
+      <div className="right-column">
+        {clockState.status === 'IN' && (
+          <div className="time-tracking-section">
+            <div className="time-info">
+              <div className="info-item elapsed-time">
+                <div className="info-label">Time Worked</div>
+                <div className="info-value">{formatTime(clockState.elapsedTime)}</div>
+              </div>
+              <div className="info-item break-time">
+                <div className="info-label">Break Time</div>
+                <div className="info-value">{formatTime(clockState.totalBreakTime)}</div>
+              </div>
+            </div>
+
+            <button
+              className={`break-button ${clockState.isOnBreak ? 'end-break' : 'start-break'}`}
+              onClick={handleBreak}
+              disabled={isLoading}
+            >
+              <Coffee className="break-icon" />
+              {isLoading ? 'Processing...' : clockState.isOnBreak ? 'End Break' : 'Start Break'}
+            </button>
           </div>
         )}
-        {clockState.shiftNotes && (
-          <div className="summary-item notes">
-            <span className="summary-label">Notes:</span>
-            <span className="summary-value">{clockState.shiftNotes}</span>
+
+        <div className="shift-summary">
+          {clockState.lastClockIn && (
+            <div className="summary-item">
+              <span className="summary-label">Started:</span>
+              <span className="summary-value">
+                {format(new Date(clockState.lastClockIn), 'hh:mm a')}
+              </span>
+            </div>
+          )}
+          {clockState.category !== 'regular' && (
+            <div className="summary-item">
+              <span className="summary-label">Category:</span>
+              <span className="summary-value">
+                {SHIFT_CATEGORIES.find(c => c.id === clockState.category)?.label}
+              </span>
+            </div>
+          )}
+          {clockState.shiftNotes && (
+            <div className="summary-item notes">
+              <span className="summary-label">Notes:</span>
+              <span className="summary-value">{clockState.shiftNotes}</span>
+            </div>
+          )}
+        </div>
+
+        {clockState.breaks.length > 0 && (
+          <div className="breaks-summary">
+            <h3>Break History</h3>
+            <div className="breaks-list">
+              {clockState.breaks.map((breakItem, index) => (
+                <div key={index} className="break-item">
+                  <div className="break-time-range">
+                    {format(new Date(breakItem.start), 'HH:mm')} - {format(new Date(breakItem.end), 'HH:mm')}
+                  </div>
+                  <div className="break-duration">
+                    {formatTime(breakItem.duration)}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

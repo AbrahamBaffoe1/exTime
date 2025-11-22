@@ -291,8 +291,10 @@
     display: none;
   }
 
-  .logout-button span {
-    display: none;
+  @media (max-width: 480px) {
+    .logout-button span {
+      display: none;
+    }
   }
 
   .logout-button {

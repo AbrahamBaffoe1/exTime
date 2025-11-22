@@ -80,120 +80,158 @@ const Registration = () => {
 
   return (
     <div className="registration-container">
-      <div className="registration-card">
-        <h2>Create Account</h2>
-        <form onSubmit={handleSubmit} className="registration-form">
-          {error && <div className="error-message">{error}</div>}
-          
-          <div className="name-group">
-            <div className="form-group">
-              <label htmlFor="firstName">First Name</label>
-              <input 
-                type="text" 
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="Enter your first name"
-                required
-                disabled={isLoading}
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="lastName">Last Name</label>
-              <input 
-                type="text" 
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Enter your last name"
-                required
-                disabled={isLoading}
-              />
-            </div>
+      {/* Image Side */}
+      <div className="registration-image-side">
+        <div className="image-overlay">
+          <div className="brand-section">
+            <h1 className="brand-title">exTime</h1>
+            <p className="brand-subtitle">Join us and take control of your time</p>
+          </div>
+        </div>
+        <img
+          src="/assets/5912a985-1d53-4a6a-b001-0151166794ee 2.JPG"
+          alt="Registration Background"
+          className="background-image"
+        />
+      </div>
+
+      {/* Form Side */}
+      <div className="registration-form-side">
+        <div className="registration-card">
+          <div className="registration-header">
+            <h2>Create Account</h2>
+            <p className="registration-subtitle">Start tracking your time today</p>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input 
-              type="text" 
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Choose a username"
-              required
+          <form onSubmit={handleSubmit} className="registration-form">
+            {error && (
+              <div className="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                {error}
+              </div>
+            )}
+
+            <div className="name-group">
+              <div className="form-group">
+                <label htmlFor="firstName">First Name</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="First name"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="lastName">Last Name</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Last name"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Choose a username"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="your@email.com"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Create a password"
+                required
+                minLength="6"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm your password"
+                required
+                minLength="6"
+                disabled={isLoading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="registration-button"
               disabled={isLoading}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input 
-              type="email" 
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input 
-              type="password" 
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Create a password"
-              required
-              minLength="6"
-              disabled={isLoading}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input 
-              type="password" 
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm your password"
-              required
-              minLength="6"
-              disabled={isLoading}
-            />
-          </div>
-          
-          <button 
-            type="submit" 
-            className="registration-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Creating Account...' : 'Register'}
-          </button>
-          
-          <div className="registration-footer">
-            <p>
-              Already have an account? 
-              <button 
-                type="button" 
-                className="login-link"
-                onClick={() => navigate('/login')}
-              >
-                Login
-              </button>
-            </p>
-          </div>
-        </form>
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner"></span>
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+
+            <div className="registration-footer">
+              <p>
+                Already have an account?
+                <button
+                  type="button"
+                  className="login-link"
+                  onClick={() => navigate('/login')}
+                >
+                  Sign In
+                </button>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

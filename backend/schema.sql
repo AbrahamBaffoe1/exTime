@@ -39,6 +39,18 @@ CREATE TABLE time_entries (
     FOREIGN KEY ("userId") REFERENCES users(id)
 );
 
+-- Create auth_logs table
+CREATE TABLE auth_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes
 CREATE INDEX idx_time_entries_user_id ON time_entries("userId");
 CREATE INDEX idx_time_entries_timestamp ON time_entries(timestamp);
+CREATE INDEX idx_auth_logs_user_id ON auth_logs(user_id);
+CREATE INDEX idx_auth_logs_created_at ON auth_logs("createdAt");

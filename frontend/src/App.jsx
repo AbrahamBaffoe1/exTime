@@ -100,14 +100,32 @@ function App() {
 
               <footer className="footer">
                 <div className="footer-content">
-                  <div className="footer-info">
-                    <p>© {new Date().getFullYear()} Time Clock App</p>
-                    <span className="version">Version 1.0.0</span>
+                  <div className="footer-left">
+                    <div className="footer-brand">
+                      <h3 className="footer-logo">exTime</h3>
+                      <p className="footer-tagline">Precision time management for professionals</p>
+                    </div>
+                    <p className="footer-copyright">© {new Date().getFullYear()} exTime. All rights reserved.</p>
                   </div>
-                  <div className="footer-links">
-                    <a href="#help">Help</a>
-                    <a href="#privacy">Privacy</a>
-                    <a href="#terms">Terms</a>
+                  <div className="footer-right">
+                    <div className="footer-section">
+                      <h4>Product</h4>
+                      <a href="#features">Features</a>
+                      <a href="#pricing">Pricing</a>
+                      <a href="#updates">Updates</a>
+                    </div>
+                    <div className="footer-section">
+                      <h4>Support</h4>
+                      <a href="#help">Help Center</a>
+                      <a href="#contact">Contact</a>
+                      <a href="#docs">Documentation</a>
+                    </div>
+                    <div className="footer-section">
+                      <h4>Legal</h4>
+                      <a href="#privacy">Privacy Policy</a>
+                      <a href="#terms">Terms of Service</a>
+                      <a href="#security">Security</a>
+                    </div>
                   </div>
                 </div>
               </footer>

@@ -221,70 +221,142 @@ input:checked + .slider:before {
   transform: translateX(1.5rem);
 }
 
-/* Modern Footer */
+/* Professional Footer with Charcoal & Gold Theme */
 .footer {
-  background-color: white;
-  border-top: 1px solid var(--border-light);
-  padding: var(--spacing-lg) 0;
+  background: linear-gradient(135deg, #1A1A1D 0%, #2A2A2F 100%);
+  border-top: 1px solid rgba(199, 154, 0, 0.2);
+  padding: 4rem 0 2rem;
   margin-top: auto;
   position: relative;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .footer::before {
   content: '';
   position: absolute;
-  top: -2px;
+  top: 0;
   left: 0;
   right: 0;
   height: 1px;
   background: linear-gradient(
     90deg,
     transparent,
-    var(--primary-500),
+    rgba(199, 154, 0, 0.3),
     transparent
   );
+}
+
+.footer::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(199, 154, 0, 0.05) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .footer-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1.5fr 2fr;
+  gap: 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Left Section */
+.footer-left {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.footer-info {
+.footer-brand {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.version {
-  padding: 0.25rem 0.75rem;
-  background-color: var(--gray-100);
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  color: var(--gray-600);
+.footer-logo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #C79A00 0%, #D4A500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: -0.02em;
 }
 
-.footer-links {
+.footer-tagline {
+  color: #9CA3AF;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 400;
+}
+
+.footer-copyright {
+  color: #6B7280;
+  font-size: 0.8125rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Right Section */
+.footer-right {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+}
+
+.footer-section {
   display: flex;
-  gap: var(--spacing-md);
+  flex-direction: column;
+  gap: 0.875rem;
 }
 
-.footer-links a {
-  color: var(--text-secondary);
+.footer-section h4 {
+  color: #EDEDED;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem 0;
+}
+
+.footer-section a {
+  color: #9CA3AF;
   text-decoration: none;
   font-size: 0.875rem;
+  font-weight: 400;
   transition: all 0.2s ease;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  position: relative;
+  width: fit-content;
 }
 
-.footer-links a:hover {
-  color: var(--primary-500);
-  background-color: var(--gray-100);
+.footer-section a::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #C79A00;
+  transition: width 0.3s ease;
+}
+
+.footer-section a:hover {
+  color: #C79A00;
+}
+
+.footer-section a:hover::before {
+  width: 100%;
 }
 
 /* Error Handling */
@@ -318,15 +390,46 @@ input:checked + .slider:before {
     grid-template-columns: 1fr;
   }
 
-  .footer-content {
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    text-align: center;
+  .footer {
+    padding: 3rem 0 2rem;
   }
 
-  .footer-info {
-    flex-direction: column;
-    gap: var(--spacing-sm);
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding: 0 1.5rem;
+  }
+
+  .footer-left {
+    gap: 1.5rem;
+  }
+
+  .footer-right {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-section {
+    gap: 0.75rem;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+  .footer {
+    padding: 2.5rem 0 1.5rem;
+  }
+
+  .footer-content {
+    padding: 0 1rem;
+  }
+
+  .footer-logo {
+    font-size: 1.5rem;
+  }
+
+  .footer-tagline {
+    font-size: 0.8125rem;
   }
 }
 
